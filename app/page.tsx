@@ -29,8 +29,7 @@ export default function Home() {
               Access and Tools
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Register and complete payment to access our comprehensive annotation tools. 
-              We support both traditional card payments and cryptocurrency for your convenience.
+              Register and complete your cryptocurrency payment to access our comprehensive annotation tools and resources.
             </p>
           </div>
 
@@ -48,11 +47,11 @@ export default function Home() {
 
             <div className="p-8 rounded-lg border border-border/50 bg-card hover:border-primary/50 transition-colors">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <span className="text-2xl">💳</span>
+                <span className="text-2xl">₿</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Flexible Payments</h3>
+              <h3 className="text-lg font-semibold mb-2">Crypto Payment</h3>
               <p className="text-muted-foreground">
-                Choose between credit card payments via Stripe or cryptocurrency transactions.
+                Fast and secure cryptocurrency payment via Tron blockchain. No intermediaries required.
               </p>
             </div>
 
@@ -87,9 +86,9 @@ export default function Home() {
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2 text-primary">2. Choose Payment Method</h3>
+                <h3 className="font-semibold text-lg mb-2 text-primary">2. Send Crypto Payment</h3>
                 <p className="text-muted-foreground">
-                  Select your preferred payment option: Stripe card or cryptocurrency.
+                  Send your payment to the Tron wallet address and submit your transaction ID.
                 </p>
               </div>
               <div>

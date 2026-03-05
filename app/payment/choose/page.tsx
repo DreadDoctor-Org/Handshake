@@ -20,59 +20,23 @@ export default function ChoosePaymentPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-2xl space-y-8">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold">Select Payment Method</h1>
+            <h1 className="text-3xl font-bold">Complete Your Payment</h1>
             <p className="text-muted-foreground">
-              Choose how you'd like to complete your payment
+              Proceed with cryptocurrency payment to access Handshake
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Card Payment Option */}
-            <Link href="/payment/card">
-              <Card className="cursor-pointer hover:border-primary/50 transition-colors h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="text-2xl">💳</span>
-                    Card Payment
-                  </CardTitle>
-                  <CardDescription>
-                    Pay with credit or debit card via Stripe
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <ul className="text-sm space-y-2 text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">✓</span>
-                        <span>Instant processing</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">✓</span>
-                        <span>Secure Stripe checkout</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">✓</span>
-                        <span>All major cards accepted</span>
-                      </li>
-                    </ul>
-                    <Button className="w-full mt-6">
-                      Continue with Card
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
+          <div className="flex justify-center">
             {/* Crypto Payment Option */}
-            <Link href="/payment/crypto">
-              <Card className="cursor-pointer hover:border-primary/50 transition-colors h-full">
+            <Link href="/payment/crypto" className="w-full">
+              <Card className="cursor-pointer hover:border-primary/50 transition-colors">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <span className="text-2xl">₿</span>
-                    Crypto Payment
+                    Pay with Tron (USDT)
                   </CardTitle>
                   <CardDescription>
-                    Pay with cryptocurrency (Tron)
+                    Fast, secure, and decentralized cryptocurrency payment
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -80,19 +44,23 @@ export default function ChoosePaymentPage() {
                     <ul className="text-sm space-y-2 text-muted-foreground">
                       <li className="flex items-start gap-2">
                         <span className="text-primary mt-1">✓</span>
-                        <span>Decentralized transaction</span>
+                        <span>Low transaction fees</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary mt-1">✓</span>
-                        <span>Low fees</span>
+                        <span>Instant verification</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary mt-1">✓</span>
-                        <span>Private and secure</span>
+                        <span>Decentralized and secure</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span>No personal information required</span>
                       </li>
                     </ul>
-                    <Button className="w-full mt-6">
-                      Continue with Crypto
+                    <Button className="w-full mt-6" size="lg">
+                      Continue with Crypto Payment
                     </Button>
                   </div>
                 </CardContent>
@@ -101,7 +69,7 @@ export default function ChoosePaymentPage() {
           </div>
 
           <p className="text-center text-sm text-muted-foreground">
-            Both payment methods are processed securely and instantly.
+            Your payment will be processed securely and verified within minutes.
           </p>
         </div>
       </main>
