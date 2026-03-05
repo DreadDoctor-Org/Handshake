@@ -1,7 +1,6 @@
 -- Create users table with payment tracking
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
-  email text unique not null,
   username text unique not null,
   payment_method text not null check (payment_method in ('stripe', 'crypto')),
   transaction_id text,
