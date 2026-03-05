@@ -17,13 +17,8 @@ create table if not exists public.payments (
 alter table public.payments enable row level security;
 
 -- Create RLS policies
-create policy "Users can view their own payments" on public.payments
+create policy "payments_select_own" on public.payments
   for select using (auth.uid() = user_id);
 
-create policy "Users can insert their own payments" on public.payments
+create policy "payments_insert_own" on public.payments
   for insert with check (auth.uid() = user_id);
-
-create policy "Service role can select all payments" on public.payments
-  for select using (
-    (select auth.jwt() ->> 'role') = 'service_role'
-  );
