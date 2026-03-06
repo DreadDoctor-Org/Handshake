@@ -1,107 +1,125 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function Home() {
+  const currentYear = new Date().getFullYear()
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted flex flex-col">
-      {/* Navigation */}
-      <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="text-2xl font-bold text-primary">Handshake</div>
-            <div className="flex gap-4 items-center">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8]">
+      {/* Navigation Header */}
+      <header className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-3">
+          <img 
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
+            alt="Handshake"
+            className="w-10 h-10 rounded"
+          />
+          <h1 className="text-2xl font-bold text-[#001f23]">Handshake</h1>
+        </div>
+        <nav className="flex items-center gap-4">
+          <Link href="/auth/login">
+            <Button variant="ghost" className="text-[#001f23] hover:bg-white/20">
+              Sign In
+            </Button>
+          </Link>
+          <Link href="/auth/register">
+            <Button className="bg-[#001f23] text-white hover:bg-[#001f23]/90">
+              Register Now
+            </Button>
+          </Link>
+        </nav>
+      </header>
+
+      {/* Hero Section */}
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-4xl space-y-12">
+          <div className="text-center space-y-6">
+            <h2 className="text-5xl md:text-6xl font-bold text-[#001f23] text-balance">
+              Master Annotation with Handshake
+            </h2>
+            <p className="text-xl text-[#001f23]/80 max-w-2xl mx-auto text-pretty">
+              Join our comprehensive annotation training platform. Register, complete your crypto payment, and gain instant access to world-class training classes.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Link href="/auth/register">
-                <Button variant="outline" size="sm">Register</Button>
+                <Button size="lg" className="bg-[#001f23] text-white hover:bg-[#001f23]/90 px-8">
+                  Get Started
+                </Button>
+              </Link>
+              <Link href="/auth/login">
+                <Button size="lg" variant="outline" className="border-[#001f23] text-[#001f23] hover:bg-white/50 px-8">
+                  Already Registered? Sign In
+                </Button>
               </Link>
             </div>
           </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-        <div className="space-y-12">
-          {/* Main Hero */}
-          <div className="text-center space-y-6">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-pretty">
-              <span className="text-primary">Handshake Annotation</span>
-              <br />
-              Access and Tools
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Register and complete your cryptocurrency payment to access our comprehensive annotation tools and resources.
-            </p>
-          </div>
 
           {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <div className="p-8 rounded-lg border border-border/50 bg-card hover:border-primary/50 transition-colors">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <span className="text-2xl">📱</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Easy Registration</h3>
-              <p className="text-muted-foreground">
-                Quick and simple registration process with just your email and password.
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="border-0 shadow-lg bg-white/95 backdrop-blur rounded-lg p-6 space-y-3">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-[#001f23]">
+                <span className="text-2xl">✓</span>
+                Easy Registration
+              </h3>
+              <p className="text-[#001f23]/70">
+                Sign up with email and password. Confirm your email address to proceed.
               </p>
             </div>
 
-            <div className="p-8 rounded-lg border border-border/50 bg-card hover:border-primary/50 transition-colors">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+            <div className="border-0 shadow-lg bg-white/95 backdrop-blur rounded-lg p-6 space-y-3">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-[#001f23]">
                 <span className="text-2xl">₿</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Crypto Payment</h3>
-              <p className="text-muted-foreground">
-                Fast and secure cryptocurrency payment via Tron blockchain. No intermediaries required.
+                Crypto Payment
+              </h3>
+              <p className="text-[#001f23]/70">
+                Fast and secure payment via Tron blockchain. No intermediaries, complete privacy.
               </p>
             </div>
 
-            <div className="p-8 rounded-lg border border-border/50 bg-card hover:border-primary/50 transition-colors">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <span className="text-2xl">✅</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Quick Access</h3>
-              <p className="text-muted-foreground">
-                Instant payment confirmation and setup. Awaiting admin verification for final access.
+            <div className="border-0 shadow-lg bg-white/95 backdrop-blur rounded-lg p-6 space-y-3">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-[#001f23]">
+                <span className="text-2xl">🎓</span>
+                Full Access
+              </h3>
+              <p className="text-[#001f23]/70">
+                Get verified by admin and receive access to all annotation training classes.
               </p>
             </div>
           </div>
 
-          {/* CTA Button */}
-          <div className="flex justify-center pt-8">
-            <Link href="/auth/register">
-              <Button size="lg" className="text-lg px-8">
-                Get Started Now
-              </Button>
-            </Link>
-          </div>
-
-          {/* Info Section */}
-          <div className="mt-16 p-8 rounded-lg bg-card border border-border/50">
-            <h2 className="text-2xl font-semibold mb-4">Payment Process</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="font-semibold text-lg mb-2 text-primary">1. Register Account</h3>
-                <p className="text-muted-foreground">
-                  Create your account with a username, email, and secure password.
-                </p>
+          {/* Process Steps */}
+          <div className="bg-white/95 backdrop-blur rounded-2xl p-8 shadow-lg">
+            <h3 className="text-2xl font-bold text-[#001f23] mb-8">How It Works</h3>
+            <div className="grid md:grid-cols-4 gap-6">
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#B8F663] to-[#59E4A0] flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold text-[#001f23]">1</span>
+                </div>
+                <h4 className="font-semibold text-[#001f23]">Register</h4>
+                <p className="text-sm text-[#001f23]/70">Create account and confirm email</p>
               </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2 text-primary">2. Send Crypto Payment</h3>
-                <p className="text-muted-foreground">
-                  Send your payment to the Tron wallet address and submit your transaction ID.
-                </p>
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#59E4A0] to-[#23DAC2] flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold text-[#001f23]">2</span>
+                </div>
+                <h4 className="font-semibold text-[#001f23]">Sign In</h4>
+                <p className="text-sm text-[#001f23]/70">Log in to your dashboard</p>
               </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2 text-primary">3. Complete Payment</h3>
-                <p className="text-muted-foreground">
-                  Process your payment securely through your chosen payment method.
-                </p>
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#23DAC2] to-[#00D3D8] flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold text-[#001f23]">3</span>
+                </div>
+                <h4 className="font-semibold text-[#001f23]">Pay with Crypto</h4>
+                <p className="text-sm text-[#001f23]/70">Send payment and verify transaction</p>
               </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-2 text-primary">4. Await Verification</h3>
-                <p className="text-muted-foreground">
-                  Admin verification completes your registration and grants full access.
-                </p>
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00D3D8] to-[#B8F663] flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold text-[#001f23]">4</span>
+                </div>
+                <h4 className="font-semibold text-[#001f23]">Get Verified</h4>
+                <p className="text-sm text-[#001f23]/70">Admin verification and account activation</p>
               </div>
             </div>
           </div>
@@ -109,10 +127,8 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 bg-background/50 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground">
-          <p>&copy; 2024 Handshake Annotation. All rights reserved.</p>
-        </div>
+      <footer className="text-center py-6 text-[#001f23]/70 text-sm">
+        <p>&copy; {currentYear} Handshake. All rights reserved.</p>
       </footer>
     </div>
   )

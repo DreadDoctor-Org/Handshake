@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,49 +30,63 @@ export default function LoginPage() {
 
       if (signInError) {
         setError(signInError.message)
+        toast.error('Sign In Failed', {
+          description: signInError.message,
+        })
         return
       }
 
-      // Redirect to payment status page or home
-      router.push('/payment/confirmation')
+      toast.success('Welcome Back!', {
+        description: 'Redirecting to your dashboard...',
+      })
+
+      // Redirect to payment dashboard page
+      router.push('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred'
+      setError(errorMsg)
+      toast.error('Error', {
+        description: errorMsg,
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
       {/* Navigation */}
-      <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/" className="text-2xl font-bold text-primary">
-            Handshake
-          </Link>
-        </div>
+      <nav className="flex items-center justify-between px-6 py-4">
+        <Link href="/" className="flex items-center gap-3">
+          <img 
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
+            alt="Handshake"
+            className="w-8 h-8 rounded"
+          />
+          <span className="text-2xl font-bold text-[#001f23]">Handshake</span>
+        </Link>
       </nav>
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md border-0 shadow-lg">
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
-              Sign in to your Handshake account
+            <CardTitle className="text-[#001f23]">Sign In</CardTitle>
+            <CardDescription className="text-[#001f23]/70">
+              Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">
                   {error}
                 </div>
               )}
 
               {/* Email Field */}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="text-sm font-medium text-[#001f23]">
                   Email
                 </label>
                 <Input
@@ -82,12 +97,13 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
                   required
+                  className="border-[#001f23]/20"
                 />
               </div>
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium">
+                <label htmlFor="password" className="text-sm font-medium text-[#001f23]">
                   Password
                 </label>
                 <Input
@@ -98,6 +114,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   required
+                  className="border-[#001f23]/20"
                 />
               </div>
 
@@ -105,15 +122,15 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full"
+                className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90"
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
 
               {/* Link to Registration */}
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-sm text-[#001f23]/70">
                 Don't have an account?{' '}
-                <Link href="/auth/register" className="text-primary hover:underline">
+                <Link href="/auth/register" className="text-[#001f23] font-semibold hover:underline">
                   Register here
                 </Link>
               </p>
