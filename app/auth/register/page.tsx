@@ -57,9 +57,11 @@ export default function RegisterPage() {
           .insert([
             {
               id: authData.user.id,
+              email: data.email,
               username: data.username,
               payment_method: 'crypto',
               payment_status: 'pending',
+              account_status: 'inactive',
             },
           ])
 
@@ -215,6 +217,11 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Footer */}
+      <footer className="text-center py-6 text-[#001f23]/70 text-sm">
+        <p>&copy; {new Date().getFullYear()} Handshake. All rights reserved.</p>
+      </footer>
     </div>
   )
 }

@@ -13,7 +13,7 @@ import { cryptoPaymentSchema, type CryptoPaymentSchema } from '@/lib/schemas/pay
 import { toast } from 'sonner'
 
 const TRON_WALLET = 'TVexA5Ztzc2o4RfSqZUvKhXofz1viT2e6u'
-const PAYMENT_AMOUNT = '99.99'
+const PAYMENT_AMOUNT = '50.00'
 
 export default function CryptoPaymentPage() {
   const router = useRouter()

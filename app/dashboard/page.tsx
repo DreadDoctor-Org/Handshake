@@ -172,14 +172,34 @@ export default function DashboardPage() {
                 )}
 
                 {isPending && (
-                  <div className="p-4 rounded-lg bg-blue-100 text-blue-900 text-sm">
-                    <p className="font-semibold mb-2">Next Steps:</p>
-                    <ol className="list-decimal list-inside space-y-1">
-                      <li>Send payment to the Tron wallet address below</li>
-                      <li>Copy your transaction ID</li>
-                      <li>Submit your transaction ID to verify payment</li>
-                      <li>Wait for admin verification</li>
-                    </ol>
+                  <div className="p-4 rounded-lg bg-blue-100 text-blue-900 text-sm space-y-3">
+                    <p className="font-semibold text-base">Complete These Steps to Enable Your Account:</p>
+                    <div className="space-y-2">
+                      <div className="flex gap-3">
+                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">1</span>
+                        <span><strong>Copy the Wallet Address</strong> - Scroll down to see your payment address</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">2</span>
+                        <span><strong>Open Your Crypto Wallet</strong> - Use Binance, Trust Wallet, TronLink, or any crypto exchange</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">3</span>
+                        <span><strong>Send $50 USDT</strong> - Send exactly $50 to the Tron wallet address below (using USDT on Tron network)</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">4</span>
+                        <span><strong>Copy Your Transaction ID</strong> - After sending, copy the transaction hash/ID from your wallet</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">5</span>
+                        <span><strong>Submit Transaction ID</strong> - Click the button below to submit your transaction ID</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">6</span>
+                        <span><strong>Wait for Admin Verification</strong> - Our admin will verify and activate your account (usually 24 hours)</span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -224,14 +244,10 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-sm text-[#001f23]/70">Payment Instructions:</p>
-                  <ul className="text-sm text-[#001f23]/80 space-y-1 list-disc list-inside">
-                    <li>Use USDT (Tron) for payment</li>
-                    <li>Send the exact amount shown in your invoice</li>
-                    <li>Copy the transaction hash/ID from your wallet</li>
-                    <li>Paste it below to verify your payment</li>
-                  </ul>
+                <div className="space-y-2 p-3 bg-white rounded border border-[#001f23]/10">
+                  <p className="text-sm text-[#001f23]/70"><strong>Amount to Send:</strong></p>
+                  <p className="text-2xl font-bold text-[#001f23]">$50 USDT</p>
+                  <p className="text-xs text-[#001f23]/60 mt-2">Send on Tron Network (TRC-20)</p>
                 </div>
               </CardContent>
             </Card>
