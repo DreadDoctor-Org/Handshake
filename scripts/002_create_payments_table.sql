@@ -2,10 +2,9 @@
 create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users(id) on delete cascade,
-  payment_method text not null check (payment_method in ('stripe', 'crypto')),
-  amount_usd decimal(10, 2) not null,
-  transaction_id text,
-  stripe_payment_intent_id text,
+  payment_method text not null default 'crypto' check (payment_method in ('crypto')),
+  amount_usd decimal(10, 2),
+  transaction_id text not null,
   crypto_tx_hash text,
   status text not null default 'pending' check (status in ('pending', 'completed', 'failed', 'cancelled')),
   metadata jsonb,

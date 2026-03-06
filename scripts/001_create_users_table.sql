@@ -2,7 +2,7 @@
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   username text unique not null,
-  payment_method text not null default 'pending' check (payment_method in ('stripe', 'crypto', 'pending')),
+  payment_method text not null default 'crypto' check (payment_method in ('crypto')),
   transaction_id text,
   payment_status text not null default 'pending' check (payment_status in ('pending', 'completed', 'failed')),
   created_at timestamp with time zone default now(),
