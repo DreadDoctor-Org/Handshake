@@ -1,33 +1,47 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
-interface User {
+interface UserData {
   id: string
+  email: string
   username: string
+  full_name: string | null
   payment_status: string
   transaction_id: string | null
+  account_status: string
   created_at: string
 }
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [transactionId, setTransactionId] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = createClient()
 
+  const TRON_WALLET = 'TVexA5Ztzc2o4RfSqZUvKhXofz1viT2e6u'
+  const PAYMENT_AMOUNT = '50.00'
+
   useEffect(() => {
-    const loadUser = async () => {
+    const loadUserData = async () => {
       try {
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-        
-        if (authError || !authUser) {
+        setIsLoading(true)
+        setError(null)
+
+        // Get current user
+        const { data: authData, error: authError } = await supabase.auth.getUser()
+
+        if (authError || !authData.user) {
           toast.error('Session Expired', {
             description: 'Please sign in again to continue.',
           })
@@ -35,32 +49,60 @@ export default function DashboardPage() {
           return
         }
 
-        const { data: userData, error: userError } = await supabase
+        const userId = authData.user.id
+
+        // Fetch user data from public.users table
+        const { data, error: dataError } = await supabase
           .from('users')
           .select('*')
-          .eq('id', authUser.id)
+          .eq('id', userId)
           .single()
 
-        if (userError) {
-          console.error('Error loading user:', userError)
-          toast.error('Error', {
-            description: 'Failed to load user data.',
-          })
-          return
-        }
+        if (dataError) {
+          // If user doesn't exist in table, create them
+          if (dataError.code === 'PGRST116' || dataError.message.includes('No rows')) {
+            const { error: insertError } = await supabase.from('users').insert([
+              {
+                id: userId,
+                email: authData.user.email || '',
+                username: authData.user.email?.split('@')[0] || 'user',
+                payment_method: 'crypto',
+                payment_status: 'pending',
+                account_status: 'inactive',
+              },
+            ])
 
-        setUser(userData)
+            if (insertError) {
+              throw insertError
+            }
+
+            // Fetch again after creating
+            const { data: newData, error: newError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', userId)
+              .single()
+
+            if (newError) throw newError
+            setUserData(newData)
+          } else {
+            throw dataError
+          }
+        } else {
+          setUserData(data)
+        }
       } catch (err) {
-        console.error('Error:', err)
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load user data'
+        setError(errorMessage)
         toast.error('Error', {
-          description: 'An unexpected error occurred.',
+          description: errorMessage,
         })
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadUser()
+    loadUserData()
   }, [supabase, router])
 
   const handleSignOut = async () => {
@@ -71,208 +113,378 @@ export default function DashboardPage() {
       })
       router.push('/')
     } catch (err) {
-      toast.error('Error', {
-        description: 'Failed to sign out.',
+      toast.error('Error signing out')
+    }
+  }
+
+  const handleSubmitTransaction = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!transactionId.trim()) {
+      toast.error('Validation Error', {
+        description: 'Please enter a transaction ID.',
       })
+      return
+    }
+
+    if (!userData) {
+      toast.error('Error', {
+        description: 'User data not loaded.',
+      })
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      // Update user with transaction ID
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          transaction_id: transactionId,
+          payment_status: 'completed',
+        })
+        .eq('id', userData.id)
+
+      if (updateError) {
+        throw updateError
+      }
+
+      // Create payment record
+      const { error: paymentError } = await supabase.from('payments').insert([
+        {
+          user_id: userData.id,
+          payment_method: 'crypto',
+          amount_usd: parseFloat(PAYMENT_AMOUNT),
+          transaction_id: transactionId,
+          status: 'pending',
+        },
+      ])
+
+      if (paymentError) {
+        console.log('Payment record error:', paymentError)
+        // Don't fail if payment record creation fails
+      }
+
+      // Update local state
+      setUserData({
+        ...userData,
+        transaction_id: transactionId,
+        payment_status: 'completed',
+      })
+
+      toast.success('Transaction Submitted!', {
+        description: 'Your transaction ID has been recorded. Waiting for admin verification.',
+      })
+
+      setTransactionId('')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit transaction'
+      toast.error('Error', {
+        description: errorMessage,
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   if (isLoading) {
     return (
+      <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-lg text-[#001f23]">Loading your dashboard...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !userData) {
+    return (
       <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
         <nav className="flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <img 
+            <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
               alt="Handshake"
               className="w-8 h-8 rounded"
             />
             <span className="text-2xl font-bold text-[#001f23]">Handshake</span>
           </Link>
+          <Button onClick={handleSignOut} variant="ghost" className="text-[#001f23]">
+            Sign Out
+          </Button>
         </nav>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-[#001f23] text-lg">Loading...</div>
-        </div>
+
+        <main className="flex-1 flex items-center justify-center px-4 py-12">
+          <Card className="w-full max-w-md border-0 shadow-lg bg-white/95">
+            <CardHeader>
+              <CardTitle className="text-[#001f23]">Error Loading Dashboard</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">
+                {error || 'Unable to load user data. Please try again.'}
+              </div>
+              <Button onClick={() => window.location.reload()} className="w-full">
+                Retry
+              </Button>
+              <Button onClick={handleSignOut} variant="outline" className="w-full">
+                Sign Out
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+
+        <footer className="text-center py-6 text-[#001f23]/70 text-sm">
+          <p>&copy; {new Date().getFullYear()} Handshake. All rights reserved.</p>
+        </footer>
       </div>
     )
   }
 
-  if (!user) {
-    return null
-  }
-
-  const isPending = user.payment_status === 'pending'
-  const isCompleted = user.payment_status === 'completed'
-  const isFailed = user.payment_status === 'failed'
+  const isPending = userData.payment_status === 'pending' && !userData.transaction_id
+  const isCompleted = userData.payment_status === 'completed'
+  const isVerified = userData.payment_status === 'verified'
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
-      {/* Navigation */}
+      {/* Navigation Header */}
       <nav className="flex items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <img 
+        <div className="flex items-center gap-3">
+          <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
             alt="Handshake"
             className="w-8 h-8 rounded"
           />
-          <span className="text-2xl font-bold text-[#001f23]">Handshake</span>
-        </Link>
-        <Button 
-          variant="ghost" 
-          onClick={handleSignOut}
-          className="text-[#001f23] hover:bg-white/20"
-        >
+          <h1 className="text-2xl font-bold text-[#001f23]">Handshake</h1>
+        </div>
+        <Button onClick={handleSignOut} variant="ghost" className="text-[#001f23] hover:bg-white/20">
           Sign Out
         </Button>
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-2xl space-y-6">
+      <main className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full">
+        <div className="space-y-6">
           {/* Welcome Card */}
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
             <CardHeader>
-              <CardTitle className="text-[#001f23]">Welcome, {user.username}!</CardTitle>
+              <CardTitle className="text-[#001f23]">Welcome back, {userData.username}!</CardTitle>
               <CardDescription className="text-[#001f23]/70">
-                Manage your account and payment status
+                Complete the payment process to activate your account
               </CardDescription>
             </CardHeader>
-          </Card>
-
-          {/* Payment Status Card */}
-          <Card className={`border-0 shadow-lg ${
-            isCompleted ? 'bg-green-50' : isPending ? 'bg-yellow-50' : 'bg-red-50'
-          }`}>
-            <CardHeader>
-              <CardTitle className="text-[#001f23] flex items-center gap-2">
-                <span className={`inline-block w-3 h-3 rounded-full ${
-                  isCompleted ? 'bg-green-500' : isPending ? 'bg-yellow-500' : 'bg-red-500'
-                }`}></span>
-                Payment Status
-              </CardTitle>
-            </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-[#001f23]/70">Status</p>
-                  <p className="text-lg font-semibold text-[#001f23] capitalize">
-                    {user.payment_status === 'pending' && '⏳ Awaiting Payment'}
-                    {user.payment_status === 'completed' && '✓ Payment Confirmed'}
-                    {user.payment_status === 'failed' && '✗ Payment Failed'}
-                  </p>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                  <p className="text-xs text-[#001f23]/70 mb-1">Email</p>
+                  <p className="font-semibold text-[#001f23] break-all">{userData.email}</p>
                 </div>
-
-                {isPending && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-[#001f23]/70">Transaction ID</p>
-                    <p className="text-[#001f23]">
-                      {user.transaction_id || 'Not submitted yet'}
-                    </p>
-                  </div>
-                )}
-
-                {isPending && (
-                  <div className="p-4 rounded-lg bg-blue-100 text-blue-900 text-sm space-y-3">
-                    <p className="font-semibold text-base">Complete These Steps to Enable Your Account:</p>
-                    <div className="space-y-2">
-                      <div className="flex gap-3">
-                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">1</span>
-                        <span><strong>Copy the Wallet Address</strong> - Scroll down to see your payment address</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">2</span>
-                        <span><strong>Open Your Crypto Wallet</strong> - Use Binance, Trust Wallet, TronLink, or any crypto exchange</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">3</span>
-                        <span><strong>Send $50 USDT</strong> - Send exactly $50 to the Tron wallet address below (using USDT on Tron network)</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">4</span>
-                        <span><strong>Copy Your Transaction ID</strong> - After sending, copy the transaction hash/ID from your wallet</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">5</span>
-                        <span><strong>Submit Transaction ID</strong> - Click the button below to submit your transaction ID</span>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">6</span>
-                        <span><strong>Wait for Admin Verification</strong> - Our admin will verify and activate your account (usually 24 hours)</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {isCompleted && (
-                  <div className="p-4 rounded-lg bg-green-100 text-green-900 text-sm">
-                    <p>Your payment has been verified by our admin. Check your email for account activation instructions.</p>
-                  </div>
-                )}
-
-                {isFailed && (
-                  <div className="p-4 rounded-lg bg-red-100 text-red-900 text-sm">
-                    <p>Your payment verification failed. Please contact support or try again.</p>
-                  </div>
-                )}
+                <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                  <p className="text-xs text-[#001f23]/70 mb-1">Username</p>
+                  <p className="font-semibold text-[#001f23]">{userData.username}</p>
+                </div>
+                <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                  <p className="text-xs text-[#001f23]/70 mb-1">Account Status</p>
+                  <p className="font-semibold text-[#001f23] capitalize">{userData.account_status}</p>
+                </div>
               </div>
-
-              {isPending && (
-                <Button 
-                  onClick={() => router.push('/payment/crypto')}
-                  className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90"
-                >
-                  Submit Payment & Transaction ID
-                </Button>
-              )}
             </CardContent>
           </Card>
 
-          {/* Crypto Payment Info */}
-          {isPending && (
-            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
-              <CardHeader>
-                <CardTitle className="text-[#001f23]">₿ Tron Payment Information</CardTitle>
-                <CardDescription className="text-[#001f23]/70">
-                  Send your payment to the address below
-                </CardDescription>
+          {/* Status Indicator */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className={`border-0 shadow-lg ${isPending ? 'bg-yellow-50' : 'bg-white/95'}`}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-[#001f23]">Payment Status</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-[#001f23]/5 border border-[#001f23]/20">
-                  <p className="text-sm text-[#001f23]/70 mb-2">Wallet Address (Tron):</p>
-                  <p className="text-[#001f23] font-mono font-bold break-all text-lg">
-                    TVexA5Ztzc2o4RfSqZUvKhXofz1viT2e6u
-                  </p>
-                </div>
+              <CardContent>
+                <p className={`text-lg font-bold ${isPending ? 'text-yellow-700' : 'text-[#001f23]'}`}>
+                  {isPending ? 'Awaiting Payment' : isCompleted ? 'Payment Submitted' : isVerified ? 'Verified ✓' : 'Payment Failed'}
+                </p>
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2 p-3 bg-white rounded border border-[#001f23]/10">
-                  <p className="text-sm text-[#001f23]/70"><strong>Amount to Send:</strong></p>
-                  <p className="text-2xl font-bold text-[#001f23]">$50 USDT</p>
-                  <p className="text-xs text-[#001f23]/60 mt-2">Send on Tron Network (TRC-20)</p>
+            <Card className="border-0 shadow-lg bg-white/95">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-[#001f23]">Amount Required</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg font-bold text-[#001f23]">${PAYMENT_AMOUNT} USDT</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg bg-white/95">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-[#001f23]">Network</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg font-bold text-[#001f23]">Tron (TRC-20)</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Payment Instructions */}
+          {isPending && (
+            <Card className="border-0 shadow-lg bg-blue-50">
+              <CardHeader>
+                <CardTitle className="text-[#001f23]">Complete These Steps to Enable Your Account</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">1</span>
+                    <span className="text-[#001f23]">
+                      <strong>Copy the Wallet Address</strong> - Scroll down to see your payment address
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">2</span>
+                    <span className="text-[#001f23]">
+                      <strong>Open Your Crypto Wallet</strong> - Use Binance, Trust Wallet, TronLink, or any crypto exchange
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">3</span>
+                    <span className="text-[#001f23]">
+                      <strong>Send $50 USDT</strong> - Send exactly $50 to the Tron wallet address below (using USDT on Tron network)
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">4</span>
+                    <span className="text-[#001f23]">
+                      <strong>Copy Your Transaction ID</strong> - After sending, copy the transaction hash/ID from your wallet
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">5</span>
+                    <span className="text-[#001f23]">
+                      <strong>Submit Transaction ID</strong> - Click the button below to submit your transaction ID
+                    </span>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">6</span>
+                    <span className="text-[#001f23]">
+                      <strong>Wait for Admin Verification</strong> - Our admin will verify and activate your account (usually 24 hours)
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Account Info */}
-          <Card className="border-0 shadow-lg">
+          {/* Wallet Address Card */}
+          <Card className="border-0 shadow-lg bg-white/95">
             <CardHeader>
-              <CardTitle className="text-[#001f23]">Account Information</CardTitle>
+              <CardTitle className="text-[#001f23]">₿ Send Your Payment Here</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-[#001f23]/70">Account ID:</span>
-                <span className="text-[#001f23] font-mono">{user.id.slice(0, 12)}...</span>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#001f23]">Tron Wallet Address</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={TRON_WALLET}
+                    readOnly
+                    className="font-mono text-xs bg-[#001f23]/5 border-[#001f23]/20"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(TRON_WALLET)
+                      toast.success('Copied!', {
+                        description: 'Wallet address copied to clipboard.',
+                      })
+                    }}
+                    className="bg-[#001f23] text-white hover:bg-[#001f23]/90 flex-shrink-0"
+                  >
+                    Copy
+                  </Button>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-[#001f23]/70">Username:</span>
-                <span className="text-[#001f23]">{user.username}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#001f23]/70">Member Since:</span>
-                <span className="text-[#001f23]">{new Date(user.created_at).toLocaleDateString()}</span>
+
+              <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                <p className="text-sm text-[#001f23]">
+                  <strong>Important:</strong> Only send USDT on the Tron network (TRC-20). Do not send other tokens or use other networks.
+                </p>
               </div>
             </CardContent>
           </Card>
+
+          {/* Transaction ID Submission */}
+          {isPending && (
+            <Card className="border-0 shadow-lg bg-white/95">
+              <CardHeader>
+                <CardTitle className="text-[#001f23]">Submit Transaction ID</CardTitle>
+                <CardDescription className="text-[#001f23]/70">After sending payment, paste your transaction ID here</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmitTransaction} className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="transactionId" className="text-sm font-medium text-[#001f23]">
+                      Transaction ID (Hash)
+                    </label>
+                    <Input
+                      id="transactionId"
+                      placeholder="Paste your Tron transaction hash here..."
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      disabled={isSubmitting}
+                      className="font-mono text-sm bg-[#001f23]/5 border-[#001f23]/20"
+                    />
+                    <p className="text-xs text-[#001f23]/70">
+                      Find this in your wallet's transaction history. It looks like: 0x1a2b3c4d...
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !transactionId.trim()}
+                    className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90"
+                    size="lg"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Transaction ID'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Verification Pending Message */}
+          {isCompleted && !isVerified && (
+            <Card className="border-0 shadow-lg bg-green-50">
+              <CardHeader>
+                <CardTitle className="text-green-700">Payment Submitted Successfully!</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-[#001f23]">
+                  Your transaction ID has been recorded: <strong>{userData.transaction_id}</strong>
+                </p>
+                <p className="text-[#001f23]">
+                  Our admin will verify your payment and activate your account. This usually takes 24 hours.
+                </p>
+                <p className="text-[#001f23]">
+                  You will receive a confirmation email once your account is verified and activated.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Verified Message */}
+          {isVerified && (
+            <Card className="border-0 shadow-lg bg-green-50">
+              <CardHeader>
+                <CardTitle className="text-green-700">✓ Account Verified!</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-[#001f23]">
+                  Congratulations! Your account has been verified and activated.
+                </p>
+                <p className="text-[#001f23]">
+                  You now have full access to verified handshake accounts ready to task in third-world countries.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
 
