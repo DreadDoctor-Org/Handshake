@@ -61,11 +61,15 @@ export default function DashboardPage() {
         if (dataError) {
           // If user doesn't exist in table, create them
           if (dataError.code === 'PGRST116' || dataError.message.includes('No rows')) {
+            // Get username from user metadata (set during registration)
+            const userMetadata = authData.user.user_metadata as any
+            const username = userMetadata?.username || authData.user.email?.split('@')[0] || 'user'
+            
             const { error: insertError } = await supabase.from('users').insert([
               {
                 id: userId,
                 email: authData.user.email || '',
-                username: authData.user.email?.split('@')[0] || 'user',
+                username: username,
                 payment_method: 'crypto',
                 payment_status: 'pending',
                 account_status: 'inactive',
