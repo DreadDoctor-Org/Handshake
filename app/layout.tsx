@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   icons: {
     icon: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg',
   },
+  verification: {
+    google: 'gxizJSXo-8ski0C7HEO7BOacq18teHYxxZKiRoDyyLw',
+  },
 }
 
 export default function RootLayout({
