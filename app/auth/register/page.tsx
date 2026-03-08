@@ -30,6 +30,17 @@ export default function RegisterPage() {
     setError(null)
 
     try {
+      // Get user's country from IP address
+      let userCountry = 'Unknown'
+      try {
+        const ipResponse = await fetch('https://ipapi.co/json/')
+        const ipData = await ipResponse.json()
+        userCountry = ipData.country_name || 'Unknown'
+      } catch (geoError) {
+        console.error('Geolocation fetch error:', geoError)
+        // Continue with 'Unknown' if geolocation fails
+      }
+
       // Sign up with Supabase Auth
       const { error: authError, data: authData } = await supabase.auth.signUp({
         email: data.email,
@@ -38,6 +49,7 @@ export default function RegisterPage() {
           emailRedirectTo: `${window.location.origin}/auth/login`,
           data: {
             username: data.username,
+            country: userCountry,
           },
         },
       })
@@ -51,7 +63,7 @@ export default function RegisterPage() {
       }
 
       if (authData.user) {
-        // Create user record in public.users table
+        // Create user record in public.users table with country
         const { error: userError } = await supabase
           .from('users')
           .insert([
@@ -59,6 +71,7 @@ export default function RegisterPage() {
               id: authData.user.id,
               email: data.email,
               username: data.username,
+              country: userCountry,
               payment_method: 'crypto',
               payment_status: 'pending',
               account_status: 'inactive',

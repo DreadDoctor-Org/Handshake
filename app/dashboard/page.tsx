@@ -18,6 +18,7 @@ interface UserData {
   transaction_id: string | null
   account_status: string
   created_at: string
+  country?: string
 }
 
 export default function DashboardPage() {
@@ -61,15 +62,17 @@ export default function DashboardPage() {
         if (dataError) {
           // If user doesn't exist in table, create them
           if (dataError.code === 'PGRST116' || dataError.message.includes('No rows')) {
-            // Get username from user metadata (set during registration)
+            // Get username and country from user metadata (set during registration)
             const userMetadata = authData.user.user_metadata as any
             const username = userMetadata?.username || authData.user.email?.split('@')[0] || 'user'
+            const country = userMetadata?.country || 'Unknown'
             
             const { error: insertError } = await supabase.from('users').insert([
               {
                 id: userId,
                 email: authData.user.email || '',
                 username: username,
+                country: country,
                 payment_method: 'crypto',
                 payment_status: 'pending',
                 account_status: 'inactive',
@@ -247,127 +250,150 @@ export default function DashboardPage() {
 
   const isPending = userData.payment_status === 'pending' && !userData.transaction_id
   const isCompleted = userData.payment_status === 'completed'
-  const isVerified = userData.payment_status === 'verified'
+  const isVerified = userData.payment_status === 'verified' || userData.account_status === 'active'
+  const ADMIN_EMAIL = 'handshake.ai@outlook.com'
+
+  const copyAdminEmail = () => {
+    navigator.clipboard.writeText(ADMIN_EMAIL)
+    toast.success('Admin email copied!', {
+      description: 'Email address copied to clipboard.',
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
       {/* Navigation Header */}
-      <nav className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-3">
+      <nav className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
+        <div className="flex items-center gap-2 md:gap-3">
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
             alt="Handshake"
-            className="w-8 h-8 rounded"
+            className="w-7 md:w-8 h-7 md:h-8 rounded"
           />
-          <h1 className="text-2xl font-bold text-[#001f23]">Handshake</h1>
+          <h1 className="text-lg md:text-2xl font-bold text-[#001f23]">Handshake</h1>
         </div>
-        <Button onClick={handleSignOut} variant="ghost" className="text-[#001f23] hover:bg-white/20">
+        <Button onClick={handleSignOut} variant="ghost" className="text-xs md:text-sm text-[#001f23] hover:bg-white/20 px-2 md:px-4">
           Sign Out
         </Button>
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full">
-        <div className="space-y-6">
+      <main className="flex-1 px-4 md:px-6 py-6 md:py-8 max-w-6xl mx-auto w-full">
+        <div className="space-y-4 md:space-y-6">
           {/* Welcome Card */}
           <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-[#001f23]">Welcome back, {userData.username}!</CardTitle>
-              <CardDescription className="text-[#001f23]/70">
-                Complete the payment process to activate your account
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-lg md:text-2xl text-[#001f23]">Welcome back, {userData.username}!</CardTitle>
+              <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
+                {isVerified ? 'Your account is verified and active' : 'Complete the payment process to activate your account'}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+            <CardContent className="space-y-3 md:space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                <div className="p-2 md:p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
                   <p className="text-xs text-[#001f23]/70 mb-1">Email</p>
-                  <p className="font-semibold text-[#001f23] break-all">{userData.email}</p>
+                  <p className="text-xs md:text-sm font-semibold text-[#001f23] break-all">{userData.email}</p>
                 </div>
-                <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                <div className="p-2 md:p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
                   <p className="text-xs text-[#001f23]/70 mb-1">Username</p>
-                  <p className="font-semibold text-[#001f23]">{userData.username}</p>
+                  <p className="text-xs md:text-sm font-semibold text-[#001f23]">{userData.username}</p>
                 </div>
-                <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
-                  <p className="text-xs text-[#001f23]/70 mb-1">Account Status</p>
-                  <p className="font-semibold text-[#001f23] capitalize">{userData.account_status}</p>
+                <div className="p-2 md:p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                  <p className="text-xs text-[#001f23]/70 mb-1">Country</p>
+                  <p className="text-xs md:text-sm font-semibold text-[#001f23]">{userData.country || 'Not set'}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Status Indicator */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card className={`border-0 shadow-lg ${isPending ? 'bg-yellow-50' : 'bg-white/95'}`}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm text-[#001f23]">Payment Status</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+            <Card className={`border-0 shadow-lg ${isVerified ? 'bg-green-50' : isPending ? 'bg-yellow-50' : 'bg-white/95'}`}>
+              <CardHeader className="pb-2 md:pb-3">
+                <CardTitle className="text-xs md:text-sm text-[#001f23]">Account Status</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className={`text-lg font-bold ${isPending ? 'text-yellow-700' : 'text-[#001f23]'}`}>
-                  {isPending ? 'Awaiting Payment' : isCompleted ? 'Payment Submitted' : isVerified ? 'Verified ✓' : 'Payment Failed'}
+                <p className={`text-base md:text-lg font-bold flex items-center gap-2 ${isVerified ? 'text-green-700' : isPending ? 'text-yellow-700' : 'text-[#001f23]'}`}>
+                  {isVerified ? '✓ Verified' : isPending ? 'Awaiting Payment' : isCompleted ? 'Payment Submitted' : 'Payment Failed'}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-white/95">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm text-[#001f23]">Amount Required</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-lg font-bold text-[#001f23]">${PAYMENT_AMOUNT} USDT</p>
-              </CardContent>
-            </Card>
+            {!isVerified && (
+              <>
+                <Card className="border-0 shadow-lg bg-white/95">
+                  <CardHeader className="pb-2 md:pb-3">
+                    <CardTitle className="text-xs md:text-sm text-[#001f23]">Amount Required</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-base md:text-lg font-bold text-[#001f23]">${PAYMENT_AMOUNT} USDT</p>
+                  </CardContent>
+                </Card>
 
-            <Card className="border-0 shadow-lg bg-white/95">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm text-[#001f23]">Network</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-lg font-bold text-[#001f23]">Tron (TRC-20)</p>
-              </CardContent>
-            </Card>
+                <Card className="border-0 shadow-lg bg-white/95">
+                  <CardHeader className="pb-2 md:pb-3">
+                    <CardTitle className="text-xs md:text-sm text-[#001f23]">Network</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-base md:text-lg font-bold text-[#001f23]">Tron (TRC-20)</p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            {isVerified && (
+              <Card className="border-0 shadow-lg bg-green-50 md:col-span-2">
+                <CardHeader className="pb-2 md:pb-3">
+                  <CardTitle className="text-xs md:text-sm text-green-700">Account Activated</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs md:text-sm text-green-700">Your account is fully verified and ready to use.</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Payment Instructions */}
-          {isPending && (
+          {!isVerified && isPending && (
             <Card className="border-0 shadow-lg bg-blue-50">
-              <CardHeader>
-                <CardTitle className="text-[#001f23]">Complete These Steps to Enable Your Account</CardTitle>
+              <CardHeader className="pb-3 md:pb-4">
+                <CardTitle className="text-sm md:text-lg text-[#001f23]">Complete These Steps to Enable Your Account</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  <div className="flex gap-3">
-                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">1</span>
-                    <span className="text-[#001f23]">
+              <CardContent className="space-y-2 md:space-y-3">
+                <div className="space-y-1 md:space-y-2">
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">1</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Copy the Wallet Address</strong> - Scroll down to see your payment address
                     </span>
                   </div>
-                  <div className="flex gap-3">
-                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">2</span>
-                    <span className="text-[#001f23]">
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">2</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Open Your Crypto Wallet</strong> - Use Binance, Trust Wallet, TronLink, or any crypto exchange
                     </span>
                   </div>
-                  <div className="flex gap-3">
-                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">3</span>
-                    <span className="text-[#001f23]">
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">3</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Send $50 USDT</strong> - Send exactly $50 to the Tron wallet address below (using USDT on Tron network)
                     </span>
                   </div>
-                  <div className="flex gap-3">
-                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">4</span>
-                    <span className="text-[#001f23]">
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">4</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Copy Your Transaction ID</strong> - After sending, copy the transaction hash/ID from your wallet
                     </span>
                   </div>
-                  <div className="flex gap-3">
-                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">5</span>
-                    <span className="text-[#001f23]">
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">5</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Submit Transaction ID</strong> - Click the button below to submit your transaction ID
                     </span>
                   </div>
-                  <div className="flex gap-3">
-                    <span className="font-bold bg-blue-300 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">6</span>
-                    <span className="text-[#001f23]">
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">6</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Wait for Admin Verification</strong> - Our admin will verify and activate your account (usually 24 hours)
                     </span>
                   </div>
@@ -377,18 +403,19 @@ export default function DashboardPage() {
           )}
 
           {/* Wallet Address Card */}
+          {!isVerified && (
           <Card className="border-0 shadow-lg bg-white/95">
-            <CardHeader>
-              <CardTitle className="text-[#001f23]">₿ Send Your Payment Here</CardTitle>
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-sm md:text-lg text-[#001f23]">₿ Send Your Payment Here</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#001f23]">Tron Wallet Address</label>
-                <div className="flex items-center gap-2">
+                <label className="text-xs md:text-sm font-medium text-[#001f23]">Tron Wallet Address</label>
+                <div className="flex flex-col sm:flex-row items-center gap-2">
                   <Input
                     value={TRON_WALLET}
                     readOnly
-                    className="font-mono text-xs bg-[#001f23]/5 border-[#001f23]/20"
+                    className="font-mono text-xs bg-[#001f23]/5 border-[#001f23]/20 w-full"
                   />
                   <Button
                     type="button"
@@ -399,32 +426,33 @@ export default function DashboardPage() {
                         description: 'Wallet address copied to clipboard.',
                       })
                     }}
-                    className="bg-[#001f23] text-white hover:bg-[#001f23]/90 flex-shrink-0"
+                    className="bg-[#001f23] text-white hover:bg-[#001f23]/90 flex-shrink-0 w-full sm:w-auto text-xs md:text-sm"
                   >
                     Copy
                   </Button>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
-                <p className="text-sm text-[#001f23]">
+              <div className="p-2 md:p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                <p className="text-xs md:text-sm text-[#001f23]">
                   <strong>Important:</strong> Only send USDT on the Tron network (TRC-20). Do not send other tokens or use other networks.
                 </p>
               </div>
             </CardContent>
           </Card>
+          )}
 
           {/* Transaction ID Submission */}
-          {isPending && (
+          {!isVerified && isPending && (
             <Card className="border-0 shadow-lg bg-white/95">
-              <CardHeader>
-                <CardTitle className="text-[#001f23]">Submit Transaction ID</CardTitle>
-                <CardDescription className="text-[#001f23]/70">After sending payment, paste your transaction ID here</CardDescription>
+              <CardHeader className="pb-3 md:pb-4">
+                <CardTitle className="text-sm md:text-lg text-[#001f23]">Submit Transaction ID</CardTitle>
+                <CardDescription className="text-xs md:text-sm text-[#001f23]/70">After sending payment, paste your transaction ID here</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmitTransaction} className="space-y-4">
+                <form onSubmit={handleSubmitTransaction} className="space-y-3 md:space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="transactionId" className="text-sm font-medium text-[#001f23]">
+                    <label htmlFor="transactionId" className="text-xs md:text-sm font-medium text-[#001f23]">
                       Transaction ID (Hash)
                     </label>
                     <Input
@@ -433,7 +461,7 @@ export default function DashboardPage() {
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
                       disabled={isSubmitting}
-                      className="font-mono text-sm bg-[#001f23]/5 border-[#001f23]/20"
+                      className="font-mono text-xs bg-[#001f23]/5 border-[#001f23]/20"
                     />
                     <p className="text-xs text-[#001f23]/70">
                       Find this in your wallet's transaction history. It looks like: 0x1a2b3c4d...
@@ -443,8 +471,7 @@ export default function DashboardPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting || !transactionId.trim()}
-                    className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90"
-                    size="lg"
+                    className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90 text-xs md:text-sm"
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Transaction ID'}
                   </Button>
@@ -456,17 +483,17 @@ export default function DashboardPage() {
           {/* Verification Pending Message */}
           {isCompleted && !isVerified && (
             <Card className="border-0 shadow-lg bg-green-50">
-              <CardHeader>
-                <CardTitle className="text-green-700">Payment Submitted Successfully!</CardTitle>
+              <CardHeader className="pb-3 md:pb-4">
+                <CardTitle className="text-sm md:text-lg text-green-700">Payment Submitted Successfully!</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-[#001f23]">
+              <CardContent className="space-y-1 md:space-y-2">
+                <p className="text-xs md:text-sm text-[#001f23]">
                   Your transaction ID has been recorded: <strong>{userData.transaction_id}</strong>
                 </p>
-                <p className="text-[#001f23]">
+                <p className="text-xs md:text-sm text-[#001f23]">
                   Our admin will verify your payment and activate your account. This usually takes 24 hours.
                 </p>
-                <p className="text-[#001f23]">
+                <p className="text-xs md:text-sm text-[#001f23]">
                   You will receive a confirmation email once your account is verified and activated.
                 </p>
               </CardContent>
@@ -476,14 +503,16 @@ export default function DashboardPage() {
           {/* Verified Message */}
           {isVerified && (
             <Card className="border-0 shadow-lg bg-green-50">
-              <CardHeader>
-                <CardTitle className="text-green-700">✓ Account Verified!</CardTitle>
+              <CardHeader className="pb-3 md:pb-4">
+                <CardTitle className="text-sm md:text-lg text-green-700 flex items-center gap-2">
+                  <span className="text-lg md:text-2xl">✓</span> Account Verified!
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-[#001f23]">
+              <CardContent className="space-y-1 md:space-y-2">
+                <p className="text-xs md:text-sm text-[#001f23]">
                   Congratulations! Your account has been verified and activated.
                 </p>
-                <p className="text-[#001f23]">
+                <p className="text-xs md:text-sm text-[#001f23]">
                   You now have full access to verified handshake accounts ready to task in third-world countries.
                 </p>
               </CardContent>
@@ -493,8 +522,34 @@ export default function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-6 text-[#001f23]/70 text-sm">
-        <p>&copy; {new Date().getFullYear()} Handshake. All rights reserved.</p>
+      <footer className="border-t border-[#001f23]/10 bg-white/50 backdrop-blur px-4 md:px-6 py-4 md:py-6">
+        <div className="max-w-6xl mx-auto space-y-3 md:space-y-4">
+          {/* Admin Contact Button */}
+          {!isVerified && (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-3">
+              <p className="text-xs md:text-sm text-[#001f23]">Need help with verification?</p>
+              <Button
+                onClick={copyAdminEmail}
+                variant="outline"
+                className="border-[#001f23] text-[#001f23] hover:bg-[#001f23] hover:text-white text-xs md:text-sm px-3 md:px-4 py-1 md:py-2"
+              >
+                Contact Admin to Get Verified Account
+              </Button>
+            </div>
+          )}
+
+          {/* Admin Email Display */}
+          <div className="text-center py-2 md:py-3 bg-[#001f23]/5 rounded-lg border border-[#001f23]/10">
+            <p className="text-xs md:text-sm text-[#001f23]">
+              <strong>Admin Email:</strong> {ADMIN_EMAIL}
+            </p>
+          </div>
+
+          {/* Copyright */}
+          <p className="text-center text-xs md:text-sm text-[#001f23]/70">
+            &copy; {new Date().getFullYear()} Handshake. All rights reserved.
+          </p>
+        </div>
       </footer>
     </div>
   )
