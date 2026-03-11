@@ -15,7 +15,10 @@ export const metadata: Metadata = {
     icon: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg',
   },
   verification: {
-    google: 'gxizJSXo-8ski0C7HEO7BOacq18teHYxxZKiRoDyyLw',
+    google: [
+      'gxizJSXo-8ski0C7HEO7BOacq18teHYxxZKiRoDyyLw',
+      'ORXVbF8NGlj07qAT9hg1gnfvKgFnea4h5NQo-TP6bNw'
+    ],
   },
   other: {
     'google-adsense-account': 'ca-pub-4570027203819755',
