@@ -22,7 +22,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-2 md:space-y-3">
             <div className="flex items-center gap-2">
-              <img 
+              <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
                 alt="Handshake"
                 className="w-8 md:w-10 h-8 md:h-10 rounded"
@@ -90,9 +90,6 @@ export default function Footer() {
           <div className="flex flex-col items-center justify-center gap-2 md:gap-4">
             <p className="text-xs md:text-sm text-white/60 text-center">
               &copy; {currentYear} Handshake AI Official Team. All rights reserved.
-            </p>
-            <p className="text-xs md:text-sm text-white/60 text-center">
-              Designed for transparency and trust
             </p>
           </div>
         </div>
