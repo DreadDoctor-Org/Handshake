@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
+
 Disallow: /api/
 Disallow: /auth/
 
-Sitemap: https://joinhandshake.vercel.app/sitemap.xml
+Sitemap: https://www.joinhandshake.site/sitemap.xml
