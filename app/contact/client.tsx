@@ -44,7 +44,7 @@ export default function ContactPageClient() {
       const formElement = new FormData(form)
 
       // Submit to Formspree
-      const response = await fetch('https://formspree.io/f/xykddrzn', {
+      const response = await fetch('https://formspree.io/f/xdawgebz', {
         method: 'POST',
         body: formElement,
         headers: {
