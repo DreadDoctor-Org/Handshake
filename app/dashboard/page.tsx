@@ -513,7 +513,7 @@ export default function DashboardPage() {
                   Congratulations! Your account has been verified and activated.
                 </p>
                 <p className="text-xs md:text-sm text-[#001f23]">
-                  You now have full access to verified handshake accounts ready to task in third-world countries.
+                  You now have full access to verified handshake accounts ready to task globally and internationally.
                 </p>
               </CardContent>
             </Card>

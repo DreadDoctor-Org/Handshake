@@ -15,7 +15,7 @@ This document outlines the complete user flow for the Handshake annotation train
   - Handshake logo in header
   - "Register Now" and "Sign In" buttons
   - Platform benefits and 4-step process visualization
-  - Clear messaging about verified handshake accounts for third-world countries
+  - Clear messaging about verified handshake accounts for global and international users
   
 ---
 

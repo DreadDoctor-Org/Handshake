@@ -19,7 +19,7 @@ export default function Home() {
                 Master Annotation with Handshake
               </h1>
               <p className="text-sm md:text-lg lg:text-xl text-[#001f23]/80 max-w-2xl mx-auto text-pretty leading-relaxed">
-                Join our comprehensive annotation training platform. Register, complete your crypto payment, and gain instant access to verified handshake accounts ready to task in third-world countries.
+                Join our comprehensive annotation training platform. Register, complete your crypto payment, and gain instant access to verified handshake accounts ready to task globally and internationally.
               </p>
               <div className="flex flex-col gap-3 md:gap-4 justify-center pt-2 md:pt-4">
                 <Link href="/auth/register">
