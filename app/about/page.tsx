@@ -1,10 +1,9 @@
-'use client'
-
+import type { Metadata } from 'next'
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import { Card } from '@/components/ui/card'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'About Handshake AI - Empowering Global Workers',
   description: 'Learn about Handshake AI, our mission to provide verified accounts and annotation training opportunities for global workers.',
 }

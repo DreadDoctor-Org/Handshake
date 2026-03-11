@@ -1,10 +1,9 @@
-'use client'
-
+import type { Metadata } from 'next'
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import { Card } from '@/components/ui/card'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Privacy Policy - Handshake AI',
   description: 'Privacy Policy for Handshake AI. Learn how we collect, use, and protect your personal data.',
 }

@@ -27,40 +27,49 @@ export default function ContactPageClient() {
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      toast.error('All fields are required')
+      toast.error('Validation Error', {
+        description: 'All fields are required.',
+      })
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // Create mailto link with form data
-      const mailtoLink = `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(
-        `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
-      )}`
+      const form = e.currentTarget
+      const formElement = new FormData(form)
 
-      // Open default email client
-      window.location.href = mailtoLink
-
-      // Show success message
-      toast.success('Preparing email...', {
-        description: 'Your default email client should open with the pre-filled message.',
+      // Submit to Formspree
+      const response = await fetch('https://formspree.io/f/xykddrzn', {
+        method: 'POST',
+        body: formElement,
+        headers: {
+          'Accept': 'application/json',
+        },
       })
 
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-      })
+      if (response.ok) {
+        toast.success('Message Sent!', {
+          description: 'Thank you for contacting us. We will respond within 24 hours.',
+        })
+
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: '',
+        })
+      } else {
+        throw new Error('Form submission failed')
+      }
     } catch (error) {
-      toast.error('Error', {
-        description: 'Failed to prepare email. Please try again.',
+      toast.error('Submission Error', {
+        description: 'Failed to send message. Please try again.',
       })
     } finally {
       setIsSubmitting(false)
@@ -133,7 +142,7 @@ export default function ContactPageClient() {
             {/* Contact Form */}
             <Card className="md:col-span-2 border-0 shadow-lg bg-white/95 backdrop-blur p-4 md:p-8">
               <h2 className="text-xl md:text-2xl font-bold text-[#001f23] mb-4 md:mb-6">Send us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4" noValidate>
                 <div>
                   <label htmlFor="name" className="block text-xs md:text-sm font-medium text-[#001f23] mb-1">
                     Full Name
