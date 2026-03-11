@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8]">
         {/* Hero Section */}
         <main className="flex items-center justify-center px-4 py-6 md:py-12">
@@ -19,7 +19,7 @@ export default function Home() {
                 Master Annotation with Handshake
               </h1>
               <p className="text-sm md:text-lg lg:text-xl text-[#001f23]/80 max-w-2xl mx-auto text-pretty leading-relaxed">
-                Join our comprehensive annotation training platform. Register, complete your crypto payment, and gain instant access to verified handshake accounts ready to task globally and internationally.
+                Join our comprehensive annotation training platform. Register, complete your crypto payment, and gain instant access to verified handshake accounts ready to task globally.
               </p>
               <div className="flex flex-col gap-3 md:gap-4 justify-center pt-2 md:pt-4">
                 <Link href="/auth/register">
