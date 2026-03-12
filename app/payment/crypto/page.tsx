@@ -295,10 +295,7 @@ export default function CryptoPaymentPage() {
                   <span className="font-bold">5.</span>
                   <span>Paste it in the field above and click Submit</span>
                 </li>
-                <li className="flex gap-3">
-                  <span className="font-bold">6.</span>
-                  <span>Wait for admin verification (24 hours)</span>
-                </li>
+
                 <li className="flex gap-3">
                   <span className="font-bold">6.</span>
                   <span>NOTE : 30-DAY MONEYBACK, GUARANTEED</span>
