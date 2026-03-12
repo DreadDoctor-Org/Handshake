@@ -300,10 +300,10 @@ export default function CryptoPaymentPage() {
                   <span>Wait for admin verification (24 hours)</span>
                 </li>
               </ol>
-              <p className="flex gap-3">
+              <li className="flex gap-3">
                 <span className="font-bold">6.</span>
                 <span>NOTE: 30-DAY MONEY BACK, GUARANTEED</span>
-              </p>
+              </li>
             </CardContent>
           </Card>
         </div>
