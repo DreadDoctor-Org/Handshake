@@ -93,8 +93,8 @@ export default function TermsPage() {
                     <p className="text-base md:text-lg">Upon successful payment verification by our admin team, you will receive verified accounts ready for tasking.</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-[#001f23] mb-1">Non-Refundable</h3>
-                    <p className="text-base md:text-lg">All payments are non-refundable once payment has been verified by our team.</p>
+                    <h3 className="font-semibold text-[#001f23] mb-1">Refundable-Payment</h3>
+                    <p className="text-base md:text-lg">30-Day Money back guarantee</p>
                   </div>
                 </div>
               </div>
