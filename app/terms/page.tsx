@@ -77,7 +77,7 @@ export default function TermsPage() {
               <h2 className="text-2xl md:text-3xl font-bold text-[#001f23]">4. Payments and Purchases</h2>
               <div className="space-y-3 text-[#001f23]/80">
                 <p className="text-base md:text-lg leading-relaxed">
-                  To access our services, users must pay $50 USD via international payment methods. This payment is non-refundable and grants access to annotation training and verified account access.
+                  To access our services, users must pay $50 USD via international payment methods. Payment is fully refundable within 14 days and is fully guaranteed. This grants access to annotation training and verified account access.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed">
                   <strong>International Payment:</strong>
@@ -87,6 +87,7 @@ export default function TermsPage() {
                   <li className="text-base md:text-lg">• Payment is processed securely through our payment provider</li>
                   <li className="text-base md:text-lg">• Your transaction is recorded and submitted for admin verification</li>
                   <li className="text-base md:text-lg">• Account activation occurs once payment is verified (usually 24 hours)</li>
+                  <li className="text-base md:text-lg font-semibold text-green-700">• Full refund available within 14 days - No questions asked</li>
                 </ul>
               </div>
             </Card>

@@ -150,8 +150,9 @@ export default function DashboardPage() {
       const firstName = nameParts[0] || 'User'
       const lastName = nameParts.slice(1).join(' ') || 'Account'
       
-      const currency = determinePaymentCurrency(userData.country)
-      const amount = currency === 'USD' ? PAYMENT_AMOUNT_USD : PAYMENT_AMOUNT_USD * 130 // Rough conversion for KES
+      // Force USD for card payments for easier international processing
+      const currency = 'USD'
+      const amount = PAYMENT_AMOUNT_USD
       const formattedAmount = formatAmountForPaystack(amount, currency)
 
       const response = await initializePayment({
@@ -447,6 +448,23 @@ export default function DashboardPage() {
                     <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Wait for admin verification</strong> - Your account will be activated after admin confirmation (usually 24 hours)
                     </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Refund Policy */}
+          {!isVerified && (
+            <Card className="border-0 shadow-lg bg-green-50">
+              <CardContent className="pt-4 md:pt-6">
+                <div className="flex gap-2 md:gap-3">
+                  <span className="text-lg md:text-2xl">✓</span>
+                  <div className="space-y-1">
+                    <p className="text-xs md:text-sm font-bold text-green-700">IMPORTANT - REFUND POLICY</p>
+                    <p className="text-xs md:text-sm text-green-700 leading-relaxed">
+                      Payment is fully refundable within 14 days and is fully guaranteed. Your satisfaction is our priority. If you have any issues or concerns, contact our support team.
+                    </p>
                   </div>
                 </div>
               </CardContent>
