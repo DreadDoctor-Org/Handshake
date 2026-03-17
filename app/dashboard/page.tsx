@@ -160,12 +160,7 @@ export default function DashboardPage() {
         currency: currency,
         firstName: firstName,
         lastName: lastName,
-        metadata: {
-          userId: userData.id,
-          firstName: firstName,
-          lastName: lastName,
-          fullName: userData.full_name || 'User Account',
-        },
+        userId: userData.id,
       })
 
       if (!response.status) {
@@ -437,12 +432,6 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex gap-2 md:gap-3">
                     <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">2</span>
-                    <span className="text-xs md:text-sm text-[#001f23]">
-                      <strong>Your information will be pre-filled</strong> - First name, last name, email, and amount are auto-populated
-                    </span>
-                  </div>
-                  <div className="flex gap-2 md:gap-3">
-                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">3</span>
                     <span className="text-xs md:text-sm text-[#001f23]">
                       <strong>Select your payment method</strong> - Choose card, mobile money, or bank transfer
                     </span>

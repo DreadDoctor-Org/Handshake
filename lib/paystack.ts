@@ -2,20 +2,14 @@
 // Note: Add your Paystack public and secret keys to environment variables
 
 export const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''
-export const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || ''
 
 export interface PaystackInitializePaymentPayload {
   email: string
-  amount: number // Amount in naira (for KES/KSH) or cents (for USD)
-  currency: 'USD' | 'KES' | 'ZAR' | 'GHS' | 'NGN' // Currency codes
-  metadata: {
-    userId: string
-    firstName: string
-    lastName: string
-    fullName?: string
-  }
-  firstName?: string
-  lastName?: string
+  amount: number // Amount in cents (smallest currency unit)
+  currency: 'USD' | 'KES' | 'ZAR' | 'GHS' | 'NGN'
+  firstName: string
+  lastName: string
+  userId: string
 }
 
 export interface PaystackVerifyPaymentResponse {
@@ -36,24 +30,20 @@ export interface PaystackVerifyPaymentResponse {
   }
 }
 
+// Initialize payment via backend API
 export const initializePayment = async (payload: PaystackInitializePaymentPayload) => {
   try {
-    const response = await fetch('https://api.paystack.co/transaction/initialize', {
+    const response = await fetch('/api/paystack/initialize', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        email: payload.email,
-        amount: payload.amount,
-        currency: payload.currency,
-        metadata: payload.metadata,
-      }),
+      body: JSON.stringify(payload),
     })
 
     if (!response.ok) {
-      throw new Error('Failed to initialize payment')
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Failed to initialize payment')
     }
 
     return await response.json()
