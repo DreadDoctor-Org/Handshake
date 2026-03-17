@@ -19,7 +19,7 @@ export default function Home() {
                 Master Annotation with Handshake
               </h1>
               <p className="text-sm md:text-lg lg:text-xl text-[#001f23]/80 max-w-2xl mx-auto text-pretty leading-relaxed">
-                Join our comprehensive annotation training platform. Register, complete your crypto payment, and gain instant access to verified handshake accounts ready to task globally.
+                Join our comprehensive annotation training platform. Register, complete your international payment, and gain instant access to verified handshake accounts ready to task globally.
               </p>
               <div className="flex flex-col gap-3 md:gap-4 justify-center pt-2 md:pt-4">
                 <Link href="/auth/register">
@@ -49,11 +49,11 @@ export default function Home() {
 
               <div className="border-0 shadow-lg bg-white/95 backdrop-blur rounded-lg p-4 md:p-6 space-y-2 md:space-y-3">
                 <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-[#001f23]">
-                  <span className="text-xl md:text-2xl">₿</span>
-                  Crypto Payment
+                  <span className="text-xl md:text-2xl">💳</span>
+                  International Payment
                 </h3>
                 <p className="text-xs md:text-sm text-[#001f23]/70 leading-relaxed">
-                  Fast and secure payment via Tron blockchain. No intermediaries, complete privacy.
+                  Fast and secure payment via Paystack. Supports cards, mobile money, and bank transfers globally.
                 </p>
               </div>
 

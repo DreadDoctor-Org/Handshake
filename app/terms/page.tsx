@@ -75,44 +75,18 @@ export default function TermsPage() {
             {/* Payments and Purchases */}
             <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-6 md:p-8 space-y-4">
               <h2 className="text-2xl md:text-3xl font-bold text-[#001f23]">4. Payments and Purchases</h2>
-              <div className="space-y-4 text-[#001f23]/80">
-                <p className="text-base md:text-lg leading-relaxed">
-                  Payment is required for annotation training and verified account purchase. By completing a payment transaction, you acknowledge and agree to the following:
-                </p>
-                <div className="ml-4 space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-[#001f23] mb-1">Payment Amount</h3>
-                    <p className="text-base md:text-lg">The required payment amount is $50 USD (USDT on Tron network).</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#001f23] mb-1">Payment Method</h3>
-                    <p className="text-base md:text-lg">We accept cryptocurrency payments via Tron blockchain for maximum security and privacy.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#001f23] mb-1">After Payment and Verification</h3>
-                    <p className="text-base md:text-lg">Upon successful payment verification by our admin team, you will receive verified accounts ready for tasking.</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#001f23] mb-1">Refundable-Payment</h3>
-                    <p className="text-base md:text-lg">30-Day Money back guarantee</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Acceptable Use */}
-            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-6 md:p-8 space-y-4">
-              <h2 className="text-2xl md:text-3xl font-bold text-[#001f23]">5. Acceptable Use</h2>
               <div className="space-y-3 text-[#001f23]/80">
                 <p className="text-base md:text-lg leading-relaxed">
-                  You agree not to use our platform for:
+                  To access our services, users must pay $50 USD via international payment methods. This payment is non-refundable and grants access to annotation training and verified account access.
+                </p>
+                <p className="text-base md:text-lg leading-relaxed">
+                  <strong>International Payment:</strong>
                 </p>
                 <ul className="space-y-2 ml-4">
-                  <li className="text-base md:text-lg">• Illegal activities or violating any applicable laws</li>
-                  <li className="text-base md:text-lg">• Harassment, abuse, or threatening behavior towards others</li>
-                  <li className="text-base md:text-lg">• Distributing malware, spam, or unauthorized content</li>
-                  <li className="text-base md:text-lg">• Attempting to breach security or access unauthorized areas</li>
-                  <li className="text-base md:text-lg">• Fraudulent or deceptive activities</li>
+                  <li className="text-base md:text-lg">• Pay $50 USD through Paystack using your preferred method (card, mobile money, or bank transfer)</li>
+                  <li className="text-base md:text-lg">• Payment is processed securely through our payment provider</li>
+                  <li className="text-base md:text-lg">• Your transaction is recorded and submitted for admin verification</li>
+                  <li className="text-base md:text-lg">• Account activation occurs once payment is verified (usually 24 hours)</li>
                 </ul>
               </div>
             </Card>

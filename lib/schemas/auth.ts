@@ -1,11 +1,20 @@
 import { z } from 'zod'
 
 export const registerSchema = z.object({
-  username: z
+  firstName: z
     .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username must be at most 20 characters')
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and dashes'),
+    .min(2, 'First name must be at least 2 characters')
+    .max(50, 'First name must be at most 50 characters'),
+  lastName: z
+    .string()
+    .min(2, 'Last name must be at least 2 characters')
+    .max(50, 'Last name must be at most 50 characters'),
+  countryCode: z.string().min(1, 'Please select a country code'),
+  phoneNumber: z
+    .string()
+    .min(7, 'Phone number must be at least 7 digits')
+    .max(15, 'Phone number must be at most 15 digits')
+    .regex(/^[0-9]+$/, 'Phone number must contain only digits'),
   email: z.string().email('Please enter a valid email address'),
   password: z
     .string()
