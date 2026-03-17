@@ -80,7 +80,8 @@ export const formatAmountForPaystack = (amount: number, currency: 'USD' | 'KES' 
 }
 
 export const determinePaymentCurrency = (country?: string): 'USD' | 'KES' | 'ZAR' | 'GHS' | 'NGN' => {
-  if (!country) return 'USD'
+  // Default to KES as the primary supported currency for this merchant account
+  if (!country) return 'KES'
   
   const countryUpper = country.toUpperCase()
   
@@ -89,5 +90,6 @@ export const determinePaymentCurrency = (country?: string): 'USD' | 'KES' | 'ZAR
   if (countryUpper.includes('GHANA')) return 'GHS'
   if (countryUpper.includes('NIGERIA')) return 'NGN'
   
-  return 'USD'
+  // Default to KES for all other countries
+  return 'KES'
 }

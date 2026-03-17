@@ -150,9 +150,10 @@ export default function DashboardPage() {
       const firstName = nameParts[0] || 'User'
       const lastName = nameParts.slice(1).join(' ') || 'Account'
       
-      // Force USD for card payments for easier international processing
-      const currency = 'USD'
-      const amount = PAYMENT_AMOUNT_USD
+      // Use KES as default currency (supported by merchant account)
+      const currency = determinePaymentCurrency(userData.country)
+      // Convert $50 USD to KES (approximately 1 USD = 130 KES)
+      const amount = currency === 'KES' ? PAYMENT_AMOUNT_USD * 130 : PAYMENT_AMOUNT_USD
       const formattedAmount = formatAmountForPaystack(amount, currency)
 
       const response = await initializePayment({
