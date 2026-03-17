@@ -9,8 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { PAYSTACK_PUBLIC_KEY, initializePayment, formatAmountForPaystack, determinePaymentCurrency } from '@/lib/paystack'
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
 
 declare global {
   interface Window {
@@ -305,23 +303,9 @@ export default function DashboardPage() {
               <Button onClick={handleSignOut} variant="outline" className="w-full">
                 Sign Out
               </Button>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    )
-  }
+              </CardContent>
+            </Card>
 
-  const isVerified = userData?.account_status === 'verified'
-  const isCompleted = userData?.payment_status === 'completed'
-  const isProcessing = userData?.payment_status === 'processing'
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 px-4 md:px-6 py-6 md:py-8 max-w-6xl mx-auto w-full">
-        <div className="space-y-4 md:space-y-6">
           {/* Payment Card */}
           {!isVerified && (
             <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
