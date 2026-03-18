@@ -56,9 +56,7 @@ export default function RegisterPage() {
 
       // Combine first and last name
       const fullName = `${data.firstName} ${data.lastName}`
-      // Remove the '+' prefix from country code and combine with phone number (e.g., +254 + 766058154 = 254766058154)
-      const cleanedCountryCode = data.countryCode.replace('+', '')
-      const phoneWithCode = `${cleanedCountryCode}${data.phoneNumber}`
+      const phoneWithCode = `${data.countryCode}${data.phoneNumber}`
 
       // Sign up with Supabase Auth
       const { error: authError, data: authData } = await supabase.auth.signUp({
@@ -92,7 +90,6 @@ export default function RegisterPage() {
               email: data.email,
               full_name: fullName,
               phone_number: phoneWithCode,
-              country_code: cleanedCountryCode,
               country: userCountry,
               payment_method: 'paystack',
               payment_status: 'pending',
