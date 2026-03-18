@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const PAYMENT_AMOUNT_USD = 50
   const ADMIN_EMAIL = 'handshake.ai@outlook.com'
 
+  // User dashboard - shows payment form, transaction ID submission, or redirects based on account status
   useEffect(() => {
     // Load Paystack script
     const script = document.createElement('script')
@@ -110,20 +111,27 @@ export default function DashboardPage() {
 
             if (newError) throw newError
             setUserData(newData)
+            setIsLoading(false)
             
             // Route to appropriate page based on status
             if (newData.account_status === 'verified') {
               router.push('/verified')
               return
             }
+            
+            if (newData.payment_status === 'submitted' || newData.payment_status === 'pending_verification') {
+              router.push('/waitlist')
+              return
+            }
+            return
+          } else {
+            throw dataError
+          }
         } else {
-          throw dataError
-        }
-
-        setIsLoading(false)
-        
-        // Route users based on account status
-        if (data) {
+          setUserData(data)
+          setIsLoading(false)
+          
+          // Route users based on account status
           if (data.account_status === 'verified') {
             router.push('/verified')
             return
