@@ -8,6 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
+declare global {
+  interface Window {
+    PaystackPop: any
+  }
+}
+
 interface UserData {
   id: string
   email: string
@@ -28,7 +34,11 @@ export default function DashboardPage() {
   const [isSubmittingTx, setIsSubmittingTx] = useState(false)
 
   useEffect(() => {
-    loadUserData()
+    const init = async () => {
+      await loadUserData()
+    }
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function loadUserData() {
@@ -94,6 +104,42 @@ export default function DashboardPage() {
   async function handleSignOut() {
     await supabase.auth.signOut()
     router.push('/auth/login')
+  }
+
+  async function handlePayment() {
+    if (!userData || !window.PaystackPop) {
+      toast.error('Payment system not ready')
+      return
+    }
+
+    try {
+      const handler = window.PaystackPop.setup({
+        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
+        email: userData.email,
+        amount: 5000 * 100, // $50 USD in cents
+        currency: 'USD',
+        ref: `handshake-${userData.id}-${Date.now()}`,
+        onClose: function () {
+          toast.info('Payment window closed.')
+        },
+        onSuccess: async function (response: any) {
+          // Update payment status to completed
+          const { error } = await supabase
+            .from('users')
+            .update({ payment_status: 'completed' })
+            .eq('id', userData.id)
+
+          if (error) throw error
+          toast.success('Payment successful! Please submit your transaction ID.')
+          setUserData({ ...userData, payment_status: 'completed' })
+        },
+      })
+      handler.openIframe()
+    } catch (err) {
+      toast.error('Payment error', {
+        description: err instanceof Error ? err.message : 'Failed to process payment',
+      })
+    }
   }
 
   async function handleSubmitTransaction(e: React.FormEvent) {
@@ -176,7 +222,10 @@ export default function DashboardPage() {
               <CardDescription>Pay $50 USD via Paystack</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full bg-[#001f23] hover:bg-[#001f23]/90 h-10">
+              <Button 
+                onClick={handlePayment}
+                className="w-full bg-[#001f23] hover:bg-[#001f23]/90 h-10"
+              >
                 Pay Now
               </Button>
             </CardContent>
