@@ -1,6 +1,5 @@
 'use client'
 
-// Fixed: Transaction ID verification flow with professional waitlist dashboard
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
