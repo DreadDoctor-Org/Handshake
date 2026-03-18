@@ -110,20 +110,30 @@ export default function DashboardPage() {
 
             if (newError) throw newError
             setUserData(newData)
-          } else {
-            throw dataError
-          }
+            
+            // Route to appropriate page based on status
+            if (newData.account_status === 'verified') {
+              router.push('/verified')
+              return
+            }
         } else {
-          setUserData(data)
+          throw dataError
         }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load user data'
-        setError(errorMessage)
-        toast.error('Error', {
-          description: errorMessage,
-        })
-      } finally {
+        
         setIsLoading(false)
+        
+        // Route users based on account status
+        if (data) {
+          if (data.account_status === 'verified') {
+            router.push('/verified')
+            return
+          }
+          
+          if (data.payment_status === 'submitted' || data.payment_status === 'pending_verification') {
+            router.push('/waitlist')
+            return
+          }
+        }
       }
     }
 
@@ -282,34 +292,71 @@ export default function DashboardPage() {
         .from('users')
         .update({
           transaction_id: transactionId.trim(),
-          payment_status: 'submitted',
+          payment_status: 'pending_verification',
         })
-        .eq('id', userData.id)
+        .eq('id', userData?.id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
 
       toast.success('Transaction ID Submitted!', {
         description: 'Redirecting to waitlist dashboard...',
       })
 
-      // Redirect to waitlist after 1.5 seconds
-      setTimeout(() => {
-        router.push('/waitlist')
-      }, 1500)
+      // Redirect to waitlist immediately
+      router.push('/waitlist')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to submit transaction ID'
+      console.error('Error submitting transaction ID:', errorMessage)
       toast.error('Error', {
         description: errorMessage,
       })
     }
   }
 
-  if (isLoading) {
+  if (isLoading || error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="text-base md:text-lg text-[#001f23]">Loading your dashboard...</div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
+        <nav className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
+          <Link href="/" className="flex items-center gap-2 md:gap-3">
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
+              alt="Handshake"
+              className="w-7 md:w-8 h-7 md:h-8 rounded"
+            />
+            <span className="text-lg md:text-2xl font-bold text-[#001f23]">Handshake</span>
+          </Link>
+          <Button onClick={handleSignOut} variant="ghost" className="text-xs md:text-sm text-[#001f23]">
+            Sign Out
+          </Button>
+        </nav>
+
+        <main className="flex-1 flex items-center justify-center px-4 py-12">
+          <Card className="w-full max-w-md border-0 shadow-lg bg-white/95">
+            <CardHeader>
+              <CardTitle className="text-lg md:text-2xl text-[#001f23]">
+                {isLoading ? 'Loading Dashboard' : 'Error Loading Dashboard'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 rounded-lg bg-red-100 text-red-700 text-xs md:text-sm">
+                {error || 'Loading your account information...'}
+              </div>
+              <Button onClick={() => window.location.reload()} className="w-full">
+                Retry
+              </Button>
+              <Button onClick={handleSignOut} variant="outline" className="w-full">
+                Sign Out
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+
+        <footer className="text-center py-4 md:py-6 text-[#001f23]/70 text-xs md:text-sm">
+          <p>&copy; {new Date().getFullYear()} Handshake. All rights reserved.</p>
+        </footer>
       </div>
     )
   }
@@ -360,7 +407,7 @@ export default function DashboardPage() {
   const isPending = userData.payment_status === 'pending'
   const isProcessing = userData.payment_status === 'processing'
   const isCompleted = userData.payment_status === 'completed'
-  const isVerified = userData.payment_status === 'verified' || userData.account_status === 'active'
+  const isVerified = userData.account_status === 'verified'
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
@@ -597,6 +644,8 @@ export default function DashboardPage() {
                   You now have full access to verified handshake accounts ready to task globally and internationally.
                 </p>
               </CardContent>
+            </Card>
+          )}
             </Card>
           )}
         </div>
