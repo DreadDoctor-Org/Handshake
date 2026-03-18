@@ -119,7 +119,7 @@ export default function DashboardPage() {
         } else {
           throw dataError
         }
-        
+
         setIsLoading(false)
         
         // Route users based on account status
@@ -134,6 +134,10 @@ export default function DashboardPage() {
             return
           }
         }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unable to load user data'
+        setError(errorMessage)
+        setIsLoading(false)
       }
     }
 
@@ -146,6 +150,7 @@ export default function DashboardPage() {
       toast.success('Signed Out', {
         description: 'You have been signed out successfully.',
       })
+      // Redirect to login after sign out
       router.push('/')
     } catch (err) {
       toast.error('Error signing out')
@@ -644,8 +649,6 @@ export default function DashboardPage() {
                   You now have full access to verified handshake accounts ready to task globally and internationally.
                 </p>
               </CardContent>
-            </Card>
-          )}
             </Card>
           )}
         </div>
