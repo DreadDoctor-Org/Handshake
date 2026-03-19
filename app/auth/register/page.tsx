@@ -117,7 +117,7 @@ export default function RegisterPage() {
           <CardHeader className="pb-3 md:pb-4">
             <CardTitle className="text-lg md:text-2xl text-[#001f23]">Create Account</CardTitle>
             <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
-              Register to access international payment services
+              Register to secure your spot | Limited slots available!
             </CardDescription>
           </CardHeader>
           <CardContent>
