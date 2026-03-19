@@ -90,8 +90,8 @@ export default function Home() {
                   <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-[#23DAC2] to-[#00D3D8] flex items-center justify-center mx-auto">
                     <span className="text-base md:text-lg font-bold text-[#001f23]">3</span>
                   </div>
-                  <h4 className="text-sm md:text-base font-semibold text-[#001f23]">Pay with Crypto</h4>
-                  <p className="text-xs md:text-sm text-[#001f23]/70">Send payment and verify transaction</p>
+                  <h4 className="text-sm md:text-base font-semibold text-[#001f23]">Pay $50 USD</h4>
+                  <p className="text-xs md:text-sm text-[#001f23]/70">Secure card payment via Paystack</p>
                 </div>
                 <div className="text-center space-y-2 md:space-y-3">
                   <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-[#00D3D8] to-[#B8F663] flex items-center justify-center mx-auto">
