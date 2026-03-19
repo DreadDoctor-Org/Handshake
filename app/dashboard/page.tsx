@@ -33,6 +33,8 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [transactionId, setTransactionId] = useState('')
+  const [isSubmittingId, setIsSubmittingId] = useState(false)
   const supabase = createClient()
 
   const PAYMENT_AMOUNT_USD = 50
@@ -267,6 +269,40 @@ export default function DashboardPage() {
     })
   }
 
+  const handleSubmitTransactionId = async () => {
+    if (!transactionId.trim() || !userData) {
+      toast.error('Error', { description: 'Please enter a transaction ID' })
+      return
+    }
+
+    setIsSubmittingId(true)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          transaction_id: transactionId.trim(),
+          account_status: 'pending',
+        })
+        .eq('id', userData.id)
+
+      if (error) throw error
+
+      toast.success('Transaction ID Submitted!', {
+        description: 'Redirecting to waitlist dashboard...',
+      })
+
+      // Redirect to waitlist after 1.5 seconds
+      setTimeout(() => {
+        router.push('/waitlist')
+      }, 1500)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit transaction ID'
+      toast.error('Error', { description: errorMessage })
+    } finally {
+      setIsSubmittingId(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex items-center justify-center">
@@ -497,22 +533,44 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {/* Verification Pending Message */}
+          {/* Transaction ID Submission Form */}
           {isCompleted && !isVerified && (
-            <Card className="border-0 shadow-lg bg-green-50">
+            <Card className="border-0 shadow-lg bg-white/95">
               <CardHeader className="pb-3 md:pb-4">
-                <CardTitle className="text-sm md:text-lg text-green-700">Payment Submitted Successfully!</CardTitle>
+                <CardTitle className="text-sm md:text-lg text-[#001f23]">Submit Your Transaction ID</CardTitle>
+                <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
+                  Copy the transaction ID from your payment confirmation and paste it below for verification
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-1 md:space-y-2">
-                <p className="text-xs md:text-sm text-[#001f23]">
-                  Your payment has been successfully processed and recorded.
-                </p>
-                <p className="text-xs md:text-sm text-[#001f23]">
-                  Our admin will verify your payment and activate your account. This usually takes 24 hours.
-                </p>
-                <p className="text-xs md:text-sm text-[#001f23]">
-                  You will receive a confirmation email once your account is verified and activated.
-                </p>
+              <CardContent className="space-y-3 md:space-y-4">
+                <div className="p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-xs md:text-sm text-blue-800">
+                    <strong>Where to find your Transaction ID:</strong>
+                    <br />
+                    Look for the transaction ID in your Paystack payment confirmation. It will appear in your confirmation email or on the payment completion page.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="transactionId" className="text-xs md:text-sm font-medium text-[#001f23]">
+                    Transaction ID
+                  </label>
+                  <Input
+                    id="transactionId"
+                    type="text"
+                    placeholder="Paste your transaction ID here"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    className="bg-white border-[#001f23]/20 text-xs md:text-sm"
+                  />
+                </div>
+                <Button
+                  onClick={handleSubmitTransactionId}
+                  disabled={!transactionId.trim() || isSubmittingId}
+                  className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90 text-sm md:text-base py-2 md:py-3"
+                  size="lg"
+                >
+                  {isSubmittingId ? 'Submitting...' : 'Submit Transaction ID'}
+                </Button>
               </CardContent>
             </Card>
           )}
