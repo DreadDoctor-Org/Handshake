@@ -6,6 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Force rebuild - removed proxy.ts file
 }
 
 export default nextConfig
