@@ -81,27 +81,6 @@ export default function RegisterPage() {
       }
 
       if (authData.user) {
-        // Create user record in public.users table
-        const { error: userError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: authData.user.id,
-              email: data.email,
-              full_name: fullName,
-              phone_number: phoneWithCode,
-              country: userCountry,
-              payment_status: 'pending',
-              account_status: 'inactive',
-            },
-          ])
-
-        if (userError) {
-          console.error('[v0] Error creating user record:', userError)
-          throw userError
-        }
-
-        // Show success message
         setSuccess(true)
         toast.success('Registration Successful!', {
           description: 'Please check your email to confirm your account.',
@@ -123,7 +102,7 @@ export default function RegisterPage() {
       {/* Navigation */}
       <nav className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
         <Link href="/" className="flex items-center gap-2 md:gap-3">
-          <img 
+          <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
             alt="Handshake"
             className="w-7 md:w-8 h-7 md:h-8 rounded"
