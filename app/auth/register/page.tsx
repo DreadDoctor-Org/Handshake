@@ -91,14 +91,14 @@ export default function RegisterPage() {
               full_name: fullName,
               phone_number: phoneWithCode,
               country: userCountry,
-              payment_method: 'paystack',
               payment_status: 'pending',
               account_status: 'inactive',
             },
           ])
 
         if (userError) {
-          console.error('Error creating user record:', userError)
+          console.error('[v0] Error creating user record:', userError)
+          throw userError
         }
 
         // Show success message

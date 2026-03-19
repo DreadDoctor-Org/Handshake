@@ -92,7 +92,6 @@ export default function DashboardPage() {
                 full_name: fullName,
                 phone_number: phoneNumber,
                 country: country,
-                payment_method: 'paystack',
                 payment_status: 'pending',
                 account_status: 'inactive',
               },
@@ -152,10 +151,9 @@ export default function DashboardPage() {
       const firstName = nameParts[0] || 'User'
       const lastName = nameParts.slice(1).join(' ') || 'Account'
       
-      // Use KES as default currency (supported by merchant account)
-      const currency = determinePaymentCurrency(userData.country)
-      // Convert $50 USD to KES (approximately 1 USD = 130 KES)
-      const amount = currency === 'KES' ? PAYMENT_AMOUNT_USD * 130 : PAYMENT_AMOUNT_USD
+      // Use USD currency only
+      const currency = 'USD'
+      const amount = PAYMENT_AMOUNT_USD
       const formattedAmount = formatAmountForPaystack(amount, currency)
 
       const response = await initializePayment({
@@ -175,14 +173,15 @@ export default function DashboardPage() {
       const accessCode = response.data.access_code
       const authorizationUrl = response.data.authorization_url
 
-      // Update user with paystack reference
-      await supabase
+      // Update user payment status to completed after successful payment
+      const { error: updateError } = await supabase
         .from('users')
         .update({
-          paystack_reference: accessCode,
-          payment_status: 'processing',
+          payment_status: 'completed',
         })
         .eq('id', userData.id)
+
+      if (updateError) throw updateError
 
       // Open Paystack payment form
       if (window.PaystackPop) {
@@ -213,20 +212,8 @@ export default function DashboardPage() {
 
               if (error) throw error
 
-              // Create payment record
-              await supabase.from('payments').insert([
-                {
-                  user_id: userData.id,
-                  payment_method: 'paystack',
-                  amount_usd: PAYMENT_AMOUNT_USD,
-                  transaction_id: response.reference || accessCode,
-                  status: 'completed',
-                  currency: currency,
-                },
-              ])
-
               toast.success('Payment Successful!', {
-                description: 'Your payment has been processed. Waiting for admin verification.',
+                description: 'Your payment has been processed. Please submit your transaction ID.',
               })
 
               // Refresh user data
