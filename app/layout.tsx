@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Handshake - Annotation Training and Verified Accounts',
-  description: 'Register and complete payment to access verified Handshake accounts ready to task globally. Fast, secure, and professional.',
+  title: 'Handshake - Annotation Training and Verified accounts',
+  description: 'Register and complete cryptocurrency payment to access verified handshake accounts ready to task globally. Fast, secure, and decentralized.',
   generator: 'Ian Mukanda',
   icons: {
     icon: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg',
