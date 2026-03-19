@@ -81,27 +81,6 @@ export default function RegisterPage() {
       }
 
       if (authData.user) {
-        // Create user record in public.users table
-        /*const { error: userError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: authData.user.id,
-              email: data.email,
-              full_name: fullName,
-              phone_number: phoneWithCode,
-              country: userCountry,
-              payment_status: 'pending',
-              account_status: 'inactive',
-            },
-          ])
-
-        if (userError) {
-          console.error('[v0] Error creating user record:', userError)
-          throw userError
-        }*/
-
-        // Show success message
         setSuccess(true)
         toast.success('Registration Successful!', {
           description: 'Please check your email to confirm your account.',
