@@ -33,6 +33,8 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [transactionId, setTransactionId] = useState('')
+  const [isSubmittingId, setIsSubmittingId] = useState(false)
   const supabase = createClient()
 
   const PAYMENT_AMOUNT_USD = 50
@@ -90,7 +92,6 @@ export default function DashboardPage() {
                 full_name: fullName,
                 phone_number: phoneNumber,
                 country: country,
-                payment_method: 'paystack',
                 payment_status: 'pending',
                 account_status: 'inactive',
               },
@@ -150,11 +151,10 @@ export default function DashboardPage() {
       const firstName = nameParts[0] || 'User'
       const lastName = nameParts.slice(1).join(' ') || 'Account'
       
-      // Use NGN as the only supported currency for this merchant account
-      const currency = determinePaymentCurrency(userData.country)
-      // Convert $50 USD to NGN (approximately 1 USD = 1650 NGN)
-      const amount = PAYMENT_AMOUNT_USD * 1650
-      const formattedAmount = formatAmountForPaystack(amount)
+      // Use USD currency only
+      const currency = 'USD'
+      const amount = PAYMENT_AMOUNT_USD
+      const formattedAmount = formatAmountForPaystack(amount, currency)
 
       const response = await initializePayment({
         email: userData.email,
@@ -173,14 +173,15 @@ export default function DashboardPage() {
       const accessCode = response.data.access_code
       const authorizationUrl = response.data.authorization_url
 
-      // Update user with paystack reference
-      await supabase
+      // Update user payment status to completed after successful payment
+      const { error: updateError } = await supabase
         .from('users')
         .update({
-          paystack_reference: accessCode,
-          payment_status: 'processing',
+          payment_status: 'completed',
         })
         .eq('id', userData.id)
+
+      if (updateError) throw updateError
 
       // Open Paystack payment form
       if (window.PaystackPop) {
@@ -211,26 +212,20 @@ export default function DashboardPage() {
 
               if (error) throw error
 
-              // Create payment record
-              await supabase.from('payments').insert([
-                {
-                  user_id: userData.id,
-                  payment_method: 'paystack',
-                  amount_usd: PAYMENT_AMOUNT_USD,
-                  transaction_id: response.reference || accessCode,
-                  status: 'completed',
-                  currency: currency,
-                },
-              ])
-
               toast.success('Payment Successful!', {
-                description: 'Your payment has been processed. Redirecting to verification page...',
+                description: 'Your payment has been processed. Please submit your transaction ID.',
               })
 
-              // Redirect to waitlist/verification page
-              setTimeout(() => {
-                router.push('/waitlist')
-              }, 1500)
+              // Refresh user data
+              const { data: updatedData } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', userData.id)
+                .single()
+
+              if (updatedData) {
+                setUserData(updatedData)
+              }
             } catch (err) {
               toast.error('Error', {
                 description: 'Payment recorded but there was an error updating your account.',
@@ -259,6 +254,40 @@ export default function DashboardPage() {
     toast.success('Admin email copied!', {
       description: 'Email address copied to clipboard.',
     })
+  }
+
+  const handleSubmitTransactionId = async () => {
+    if (!transactionId.trim() || !userData) {
+      toast.error('Error', { description: 'Please enter a transaction ID' })
+      return
+    }
+
+    setIsSubmittingId(true)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          transaction_id: transactionId.trim(),
+          account_status: 'pending',
+        })
+        .eq('id', userData.id)
+
+      if (error) throw error
+
+      toast.success('Transaction ID Submitted!', {
+        description: 'Redirecting to waitlist dashboard...',
+      })
+
+      // Redirect to waitlist after 1.5 seconds
+      setTimeout(() => {
+        router.push('/waitlist')
+      }, 1500)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit transaction ID'
+      toast.error('Error', { description: errorMessage })
+    } finally {
+      setIsSubmittingId(false)
+    }
   }
 
   if (isLoading) {
@@ -303,24 +332,177 @@ export default function DashboardPage() {
               <Button onClick={handleSignOut} variant="outline" className="w-full">
                 Sign Out
               </Button>
+            </CardContent>
+          </Card>
+        </main>
+
+        <footer className="text-center py-4 md:py-6 text-[#001f23]/70 text-xs md:text-sm">
+          <p>&copy; {new Date().getFullYear()} Handshake. All rights reserved.</p>
+        </footer>
+      </div>
+    )
+  }
+
+  const isPending = userData.payment_status === 'pending'
+  const isProcessing = userData.payment_status === 'processing'
+  const isCompleted = userData.payment_status === 'completed'
+  const isVerified = userData.payment_status === 'verified' || userData.account_status === 'active'
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
+      {/* Navigation Header */}
+      <nav className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <img
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202026-03-06%20at%201.07.27%20AM-diCisn1VGmxmGniWtuT9XA85Ahzqh0.jpeg"
+            alt="Handshake"
+            className="w-7 md:w-8 h-7 md:h-8 rounded"
+          />
+          <h1 className="text-lg md:text-2xl font-bold text-[#001f23]">Handshake</h1>
+        </div>
+        <Button onClick={handleSignOut} variant="ghost" className="text-xs md:text-sm text-[#001f23] hover:bg-white/20 px-2 md:px-4">
+          Sign Out
+        </Button>
+      </nav>
+
+      {/* Main Content */}
+      <main className="flex-1 px-4 md:px-6 py-6 md:py-8 max-w-6xl mx-auto w-full">
+        <div className="space-y-4 md:space-y-6">
+          {/* Welcome Card */}
+          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-lg md:text-2xl text-[#001f23]">Welcome, {userData.full_name || 'User'}!</CardTitle>
+              <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
+                {isVerified ? 'Your account is verified and active' : 'Complete the international payment to activate your account'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 md:space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                <div className="p-2 md:p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                  <p className="text-xs text-[#001f23]/70 mb-1">Email</p>
+                  <p className="text-xs md:text-sm font-semibold text-[#001f23] break-all">{userData.email}</p>
+                </div>
+                <div className="p-2 md:p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                  <p className="text-xs text-[#001f23]/70 mb-1">Name</p>
+                  <p className="text-xs md:text-sm font-semibold text-[#001f23]">{userData.full_name || 'Not set'}</p>
+                </div>
+                <div className="p-2 md:p-3 bg-[#001f23]/5 rounded border border-[#001f23]/10">
+                  <p className="text-xs text-[#001f23]/70 mb-1">Country</p>
+                  <p className="text-xs md:text-sm font-semibold text-[#001f23]">{userData.country || 'Not set'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Indicator */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+            <Card className={`border-0 shadow-lg ${isVerified ? 'bg-green-50' : isPending || isProcessing ? 'bg-yellow-50' : 'bg-white/95'}`}>
+              <CardHeader className="pb-2 md:pb-3">
+                <CardTitle className="text-xs md:text-sm text-[#001f23]">Payment Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className={`text-base md:text-lg font-bold flex items-center gap-2 ${isVerified ? 'text-green-700' : isPending || isProcessing ? 'text-yellow-700' : 'text-[#001f23]'}`}>
+                  {isVerified ? '✓ Verified' : isProcessing ? 'Processing...' : isPending ? 'Awaiting Payment' : isCompleted ? 'Payment Completed' : 'Pending'}
+                </p>
               </CardContent>
             </Card>
 
-          {/* Payment Card */}
+            {!isVerified && (
+              <>
+                <Card className="border-0 shadow-lg bg-white/95">
+                  <CardHeader className="pb-2 md:pb-3">
+                    <CardTitle className="text-xs md:text-sm text-[#001f23]">Amount Required</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-base md:text-lg font-bold text-[#001f23]">${PAYMENT_AMOUNT_USD} USD</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-lg bg-white/95">
+                  <CardHeader className="pb-2 md:pb-3">
+                    <CardTitle className="text-xs md:text-sm text-[#001f23]">Payment Method</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-base md:text-lg font-bold text-[#001f23]">International Payments</p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            {isVerified && (
+              <Card className="border-0 shadow-lg bg-green-50 md:col-span-2">
+                <CardHeader className="pb-2 md:pb-3">
+                  <CardTitle className="text-xs md:text-sm text-green-700">Account Activated</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs md:text-sm text-green-700">Your account is fully verified and ready to use globally and internationally.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Payment Instructions */}
           {!isVerified && (
-            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+            <Card className="border-0 shadow-lg bg-blue-50">
               <CardHeader className="pb-3 md:pb-4">
-                <CardTitle className="text-sm md:text-lg text-[#001f23]">Complete Your Payment</CardTitle>
-                <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
-                  Click the button below to securely process your payment
-                </CardDescription>
-                <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-xs md:text-sm text-blue-800">
-                    <span className="font-bold">Amount to Pay: $50 USD</span>
-                    <br />
-                    <span className="text-blue-700">(Processing in NGN - approximately ₦82,500)</span>
-                  </p>
+                <CardTitle className="text-sm md:text-lg text-[#001f23]">International Payment Processing</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 md:space-y-3">
+                <div className="space-y-1 md:space-y-2">
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">1</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
+                      <strong>Click "Pay Now" button below</strong> - This will open the secure Paystack payment form
+                    </span>
+                  </div>
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">2</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
+                      <strong>Select your payment method</strong> - Choose card, mobile money, or bank transfer
+                    </span>
+                  </div>
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">4</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
+                      <strong>Complete the checkout</strong> - Follow the payment method prompts
+                    </span>
+                  </div>
+                  <div className="flex gap-2 md:gap-3">
+                    <span className="font-bold bg-blue-300 rounded-full w-5 md:w-6 h-5 md:h-6 flex items-center justify-center flex-shrink-0 text-xs md:text-sm">5</span>
+                    <span className="text-xs md:text-sm text-[#001f23]">
+                      <strong>Wait for admin verification</strong> - Your account will be activated after admin confirmation (usually 24 hours)
+                    </span>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Refund Policy */}
+          {!isVerified && (
+            <Card className="border-0 shadow-lg bg-green-50">
+              <CardContent className="pt-4 md:pt-6">
+                <div className="flex gap-2 md:gap-3">
+                  <span className="text-lg md:text-2xl">✓</span>
+                  <div className="space-y-1">
+                    <p className="text-xs md:text-sm font-bold text-green-700">IMPORTANT - REFUND POLICY</p>
+                    <p className="text-xs md:text-sm text-green-700 leading-relaxed">
+                      Payment is fully refundable within 14 days and is fully guaranteed. Your satisfaction is our priority. If you have any issues or concerns, contact our support team.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Payment Button */}
+          {!isVerified && (
+            <Card className="border-0 shadow-lg bg-white/95">
+              <CardHeader className="pb-3 md:pb-4">
+                <CardTitle className="text-sm md:text-lg text-[#001f23]">Ready to Activate Your Account?</CardTitle>
+                <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
+                  Click the button below to securely process your ${PAYMENT_AMOUNT_USD} USD payment
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button
@@ -338,22 +520,44 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {/* Verification Pending Message */}
+          {/* Transaction ID Submission Form */}
           {isCompleted && !isVerified && (
-            <Card className="border-0 shadow-lg bg-green-50">
+            <Card className="border-0 shadow-lg bg-white/95">
               <CardHeader className="pb-3 md:pb-4">
-                <CardTitle className="text-sm md:text-lg text-green-700">Payment Submitted Successfully!</CardTitle>
+                <CardTitle className="text-sm md:text-lg text-[#001f23]">Submit Your Transaction ID</CardTitle>
+                <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
+                  Copy the transaction ID from your payment confirmation and paste it below for verification
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-1 md:space-y-2">
-                <p className="text-xs md:text-sm text-[#001f23]">
-                  Your payment has been successfully processed and recorded.
-                </p>
-                <p className="text-xs md:text-sm text-[#001f23]">
-                  Our admin will verify your payment and activate your account. This usually takes 24 hours.
-                </p>
-                <p className="text-xs md:text-sm text-[#001f23]">
-                  You will receive a confirmation email once your account is verified and activated.
-                </p>
+              <CardContent className="space-y-3 md:space-y-4">
+                <div className="p-3 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-xs md:text-sm text-blue-800">
+                    <strong>Where to find your Transaction ID:</strong>
+                    <br />
+                    Look for the transaction ID in your Paystack payment confirmation. It will appear in your confirmation email or on the payment completion page.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="transactionId" className="text-xs md:text-sm font-medium text-[#001f23]">
+                    Transaction ID
+                  </label>
+                  <Input
+                    id="transactionId"
+                    type="text"
+                    placeholder="Paste your transaction ID here"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    className="bg-white border-[#001f23]/20 text-xs md:text-sm"
+                  />
+                </div>
+                <Button
+                  onClick={handleSubmitTransactionId}
+                  disabled={!transactionId.trim() || isSubmittingId}
+                  className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90 text-sm md:text-base py-2 md:py-3"
+                  size="lg"
+                >
+                  {isSubmittingId ? 'Submitting...' : 'Submit Transaction ID'}
+                </Button>
               </CardContent>
             </Card>
           )}

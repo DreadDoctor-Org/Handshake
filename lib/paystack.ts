@@ -5,8 +5,8 @@ export const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY |
 
 export interface PaystackInitializePaymentPayload {
   email: string
-  amount: number // Amount in kobo (smallest currency unit for NGN)
-  currency: 'NGN'
+  amount: number // Amount in cents (smallest currency unit)
+  currency: 'USD' | 'KES' | 'ZAR' | 'GHS' | 'NGN'
   firstName: string
   lastName: string
   userId: string
@@ -72,14 +72,24 @@ export const verifyPayment = async (reference: string): Promise<PaystackVerifyPa
   }
 }
 
-export const formatAmountForPaystack = (amount: number): number => {
-  // Paystack expects amounts in kobo (smallest unit for NGN)
-  // Multiply by 100 to convert from naira to kobo
+export const formatAmountForPaystack = (amount: number, currency: 'USD' | 'KES' | 'ZAR' | 'GHS' | 'NGN'): number => {
+  // Paystack expects amounts in the smallest currency unit
+  // USD: cents (multiply by 100)
+  // KES, ZAR, GHS, NGN: base units (multiply by 100)
   return Math.round(amount * 100)
 }
 
-export const determinePaymentCurrency = (country?: string): 'NGN' => {
-  // Use NGN (Nigerian Naira) as the only supported currency for this merchant account
-  // NGN is the most commonly supported currency on Paystack
-  return 'NGN'
+export const determinePaymentCurrency = (country?: string): 'USD' | 'KES' | 'ZAR' | 'GHS' | 'NGN' => {
+  // Default to KES as the primary supported currency for this merchant account
+  if (!country) return 'KES'
+  
+  const countryUpper = country.toUpperCase()
+  
+  if (countryUpper.includes('KENYA')) return 'KES'
+  if (countryUpper.includes('SOUTH AFRICA')) return 'ZAR'
+  if (countryUpper.includes('GHANA')) return 'GHS'
+  if (countryUpper.includes('NIGERIA')) return 'NGN'
+  
+  // Default to KES for all other countries
+  return 'KES'
 }
