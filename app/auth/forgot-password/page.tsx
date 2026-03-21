@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: `${window.location.origin}/?code=RECOVERY_CODE&type=recovery`,
       })
 
       if (error) {
@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
 
       setSubmitted(true)
       toast.success('Email Sent!', {
-        description: 'Check your email for password reset instructions.',
+        description: 'Check your email for password reset instructions. If you don\'t see it within 5 minutes, check your spam folder.',
       })
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred'

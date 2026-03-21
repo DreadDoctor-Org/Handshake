@@ -24,7 +24,6 @@ export default function ResetPasswordPage() {
       try {
         // Get the code from URL query parameters
         const code = searchParams.get('code')
-        console.log('[v0] Recovery code from URL:', code)
 
         if (!code) {
           setError('Invalid recovery link. Please request a new password reset.')
@@ -36,14 +35,12 @@ export default function ResetPasswordPage() {
         const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
         
         if (exchangeError || !data.session) {
-          console.error('[v0] Error exchanging code for session:', exchangeError)
           setError('This recovery link is invalid or has expired. Please request a new one.')
           setIsVerifying(false)
           return
         }
 
         // Session established successfully
-        console.log('[v0] Session established successfully')
         setIsVerifying(false)
       } catch (err) {
         console.error('[v0] Error verifying recovery code:', err)
