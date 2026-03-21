@@ -12,12 +12,12 @@ export default function Home() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if this is a password recovery link
+    // Intercept recovery codes from Supabase password reset emails
+    // Supabase sends: ?code=xxxxx
     const code = searchParams.get('code')
-    const type = searchParams.get('type')
-
-    if (code && type === 'recovery') {
-      // Redirect to password reset page with the recovery code
+    
+    // If there's a code parameter, redirect to password reset page
+    if (code) {
       router.push(`/auth/reset-password?code=${code}`)
       return
     }
