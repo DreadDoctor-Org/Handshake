@@ -1,28 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 
 export default function Home() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    // Intercept recovery codes from Supabase password reset emails
-    // Supabase sends: ?code=xxxxx
-    const code = searchParams.get('code')
-    
-    // If there's a code parameter, redirect to password reset page
-    if (code) {
-      router.push(`/auth/reset-password?code=${code}`)
-      return
-    }
-  }, [searchParams, router])
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

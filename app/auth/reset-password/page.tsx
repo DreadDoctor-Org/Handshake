@@ -21,11 +21,20 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
+        // Get the current session - Supabase automatically creates one from the recovery link
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          setError('An error occurred. Please request a new password reset link.')
+          return
+        }
+
+        if (session && session.user) {
+          // Session is valid, user can reset password
           setIsVerified(true)
         } else {
-          setError('Your session has expired. Please request a new password reset link.')
+          // No session - recovery link might be invalid or expired
+          setError('Your recovery link is invalid or has expired. Please request a new one.')
         }
       } catch (err) {
         setError('An error occurred. Please try again.')
@@ -33,7 +42,7 @@ export default function ResetPasswordPage() {
     }
 
     checkSession()
-  }, [supabase.auth])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
