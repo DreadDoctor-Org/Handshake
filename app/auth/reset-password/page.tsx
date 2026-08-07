@@ -1,212 +1,127 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { FormEvent, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { createClient } from '@/lib/supabase/client'
-import { toast } from 'sonner'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const supabase = createClient()
-
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [confirmation, setConfirmation] = useState('')
+  const [ready, setReady] = useState(false)
+  const [checking, setChecking] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    const verifyAndSetup = async () => {
+    const supabase = createClient()
+    let active = true
+
+    const establishRecoverySession = async () => {
       try {
-        const code = searchParams.get('code')
+        const url = new URL(window.location.href)
+        const code = url.searchParams.get('code')
+        const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+        const accessToken = hash.get('access_token')
+        const refreshToken = hash.get('refresh_token')
 
-        if (!code) {
-          setError('No recovery code found. Please request a new password reset link.')
-          setIsVerifying(false)
-          return
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          if (exchangeError) throw exchangeError
+        } else if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (sessionError) throw sessionError
         }
 
-        // Exchange the code for a session
-        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+        const { data, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) throw sessionError
+        if (!data.session) throw new Error('This password reset link is invalid or expired.')
 
-        if (exchangeError || !data.session) {
-          setError('Recovery link is invalid or expired. Please request a new password reset link.')
-          setIsVerifying(false)
-          return
-        }
-
-        // Session established successfully
-        setIsVerifying(false)
-      } catch (err) {
-        setError('An error occurred. Please try again.')
-        setIsVerifying(false)
+        if (active) setReady(true)
+      } catch (cause) {
+        if (active) setError(cause instanceof Error ? cause.message : 'This password reset link is invalid or expired.')
+      } finally {
+        if (active) setChecking(false)
       }
     }
 
-    verifyAndSetup()
-  }, [searchParams, supabase.auth])
+    establishRecoverySession()
+    return () => {
+      active = false
+    }
+  }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError('')
+    setMessage('')
 
     if (password.length < 8) {
-      toast.error('Error', {
-        description: 'Password must be at least 8 characters long',
-      })
+      setError('Password must contain at least 8 characters.')
+      return
+    }
+    if (password !== confirmation) {
+      setError('Passwords do not match.')
       return
     }
 
-    if (password !== confirmPassword) {
-      toast.error('Error', {
-        description: 'Passwords do not match',
-      })
-      return
-    }
-
-    setIsLoading(true)
+    setSubmitting(true)
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password,
-      })
-
+      const supabase = createClient()
+      const { error: updateError } = await supabase.auth.updateUser({ password })
       if (updateError) throw updateError
-
-      toast.success('Success!', {
-        description: 'Your password has been reset. Redirecting to login...',
-      })
-
-      // Sign out and redirect to login
       await supabase.auth.signOut()
-      setTimeout(() => {
-        router.push('/auth/login')
-      }, 2000)
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to reset password'
-      toast.error('Error', {
-        description: errorMsg,
-      })
+      setMessage('Password updated successfully. Redirecting to sign in…')
+      window.setTimeout(() => router.replace('/auth/login'), 1200)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to update your password.')
     } finally {
-      setIsLoading(false)
+      setSubmitting(false)
     }
-  }
-
-  if (isVerifying) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#001f23] mx-auto mb-4"></div>
-          <p className="text-[#001f23] font-medium">Verifying your recovery link...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
-        <nav className="flex items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-[#001f23]">Handshake</span>
-          </Link>
-        </nav>
-
-        <main className="flex-1 flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md border-0 shadow-lg bg-white/95">
-            <CardHeader>
-              <CardTitle className="text-[#001f23]">Recovery Link Expired</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-[#001f23]/70">{error}</p>
-              <Link href="/auth/forgot-password">
-                <Button className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90">
-                  Request New Reset Link
-                </Button>
-              </Link>
-              <Link href="/auth/login">
-                <Button variant="outline" className="w-full">
-                  Back to Login
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#B8F663] via-[#59E4A0] to-[#00D3D8] flex flex-col">
-      <nav className="flex items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-[#001f23]">Handshake</span>
-        </Link>
-      </nav>
-
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md border-0 shadow-lg bg-white/95">
-          <CardHeader>
-            <CardTitle className="text-[#001f23]">Set Your New Password</CardTitle>
-            <CardDescription className="text-[#001f23]/70">
-              Enter and confirm your new password below. Must be at least 8 characters.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{ready ? 'Create a new password' : 'Password recovery'}</CardTitle>
+          <CardDescription>
+            {checking ? 'Verifying your recovery link…' : ready ? 'Enter and confirm your new password.' : 'Request a new recovery link to continue.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {checking ? (
+            <p className="text-sm text-muted-foreground">Please wait while we verify your link.</p>
+          ) : ready ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-[#001f23]">
-                  New Password
-                </label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your new password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  minLength={8}
-                />
+                <label htmlFor="new-password" className="text-sm font-medium">New password</label>
+                <Input id="new-password" type="password" minLength={8} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} disabled={submitting} required />
               </div>
-
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium text-[#001f23]">
-                  Confirm Password
-                </label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Re-enter your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  minLength={8}
-                />
+                <label htmlFor="confirm-password" className="text-sm font-medium">Confirm new password</label>
+                <Input id="confirm-password" type="password" minLength={8} autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={submitting} required />
               </div>
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-[#001f23] text-white hover:bg-[#001f23]/90"
-              >
-                {isLoading ? 'Resetting Password...' : 'Reset Password'}
-              </Button>
-
-              <p className="text-center text-xs text-[#001f23]/70">
-                Remember your password?{' '}
-                <Link href="/auth/login" className="text-[#001f23] font-semibold hover:underline">
-                  Sign In
-                </Link>
-              </p>
+              {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+              {message && <p role="status" className="text-sm text-muted-foreground">{message}</p>}
+              <Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Updating password…' : 'Update password'}</Button>
             </form>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+          ) : (
+            <div className="space-y-4">
+              <p role="alert" className="text-sm text-destructive">{error}</p>
+              <Link href="/auth/forgot-password" className="block"><Button className="w-full">Request a new link</Button></Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </main>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Navbar from '@/components/navbar'
@@ -9,16 +9,14 @@ import Footer from '@/components/footer'
 
 export default function Home() {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if this is a password recovery link from Supabase
-    const code = searchParams.get('code')
+    // Read the recovery code only in the browser so this page remains prerenderable.
+    const code = new URLSearchParams(window.location.search).get('code')
     if (code) {
-      // Redirect to password reset page with the recovery code
-      router.replace(`/auth/reset-password?code=${code}`)
+      router.replace(`/auth/reset-password?code=${encodeURIComponent(code)}`)
     }
-  }, [searchParams, router])
+  }, [router])
 
   return (
     <div className="min-h-screen flex flex-col">
