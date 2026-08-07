@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     ],
   },
   other: {
-    'google-adsense-account': 'ca-pub-4570027203819755',
+    'google-adsense-account': 'ca-pub-6618412813589719',
   },
 }
 
