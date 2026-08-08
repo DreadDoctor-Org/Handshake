@@ -45,6 +45,12 @@ export default function ResetPasswordPage() {
         if (sessionError) throw sessionError
         if (!data.session) throw new Error('This password reset link is invalid or expired.')
 
+        // The callback route already exchanged PKCE codes. Remove one-time URL values
+        // so refreshes cannot try to redeem the same code again.
+        if (code || window.location.hash) {
+          window.history.replaceState({}, document.title, window.location.pathname)
+        }
+
         if (active) setReady(true)
       } catch (cause) {
         if (active) setError(cause instanceof Error ? cause.message : 'This password reset link is invalid or expired.')
