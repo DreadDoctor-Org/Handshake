@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     ],
   },
   other: {
-    'google-adsense-account': 'ca-pub-6618412813589719',
+    'google-adsense-account': 'ca-pub-4003129432428812',
   },
 }
 
@@ -37,7 +37,7 @@ export default function RootLayout({
         {children}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6618412813589719"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4003129432428812"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
