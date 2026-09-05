@@ -152,8 +152,15 @@ export default function DashboardPage() {
       const firstName = nameParts[0] || 'User'
       const lastName = nameParts.slice(1).join(' ') || 'Account'
       
-      // Use USD currency only
-      const currency = 'USD'
+      // Currency is configurable so it can be matched to the currency that has
+      // active collection channels on the Paystack account (USD, KES, NGN, etc.)
+      // without a code change. Defaults to USD.
+      const currency = (process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || 'USD') as
+        | 'USD'
+        | 'KES'
+        | 'ZAR'
+        | 'GHS'
+        | 'NGN'
       const amount = PAYMENT_AMOUNT_USD
       const formattedAmount = formatAmountForPaystack(amount, currency)
 

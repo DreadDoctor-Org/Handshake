@@ -21,6 +21,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Optionally restrict channels via env (comma-separated, e.g. "card,bank").
+    // Leave unset to let Paystack use every active channel for the currency.
+    const channelsEnv = process.env.PAYSTACK_CHANNELS
+    const channels = channelsEnv
+      ? channelsEnv.split(',').map((c) => c.trim()).filter(Boolean)
+      : undefined
+
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -31,8 +38,7 @@ export async function POST(request: NextRequest) {
         email,
         amount,
         currency,
-        first_name: firstName,
-        last_name: lastName,
+        ...(channels ? { channels } : {}),
         metadata: {
           userId,
           firstName,
@@ -41,15 +47,21 @@ export async function POST(request: NextRequest) {
       }),
     })
 
+    const data = await response.json()
+
     if (!response.ok) {
-      const errorData = await response.json()
+      // Surface the exact Paystack error so channel/currency issues are diagnosable.
+      console.error('[v0] Paystack initialize failed:', {
+        status: response.status,
+        currency,
+        message: data?.message,
+      })
       return NextResponse.json(
-        { message: errorData.message || 'Failed to initialize payment' },
+        { message: data?.message || 'Failed to initialize payment' },
         { status: response.status }
       )
     }
 
-    const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
     console.error('Paystack initialization error:', error)
