@@ -41,14 +41,15 @@ export default function DashboardPage() {
   const ADMIN_EMAIL = 'handshake.ai@outlook.com'
 
   useEffect(() => {
-    // Load Paystack script
-    const script = document.createElement('script')
-    script.src = 'https://js.paystack.co/v1/inline.js'
-    document.body.appendChild(script)
+    // Load Paystack Inline v2 (supports resuming a server-initialized transaction)
+    const existing = document.querySelector<HTMLScriptElement>('script[data-paystack="true"]')
+    if (existing) return
 
-    return () => {
-      document.body.removeChild(script)
-    }
+    const script = document.createElement('script')
+    script.src = 'https://js.paystack.co/v2/inline.js'
+    script.async = true
+    script.dataset.paystack = 'true'
+    document.body.appendChild(script)
   }, [])
 
   useEffect(() => {
@@ -165,80 +166,73 @@ export default function DashboardPage() {
         userId: userData.id,
       })
 
-      if (!response.status) {
-        throw new Error('Failed to initialize payment')
+      if (!response.status || !response.data?.access_code) {
+        throw new Error(response.message || 'Failed to initialize payment')
       }
 
-      // Store the access code for verification later
-      const accessCode = response.data.access_code
-      const authorizationUrl = response.data.authorization_url
+      // Use the exact transaction the server initialized (correct currency + channels).
+      const accessCode = response.data.access_code as string
+      const authorizationUrl = response.data.authorization_url as string
+      const reference = response.data.reference as string
 
-      // Update user payment status to completed after successful payment
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          payment_status: 'completed',
-        })
-        .eq('id', userData.id)
+      const onPaymentSuccess = async (paidReference: string) => {
+        try {
+          await supabase
+            .from('users')
+            .update({
+              payment_status: 'completed',
+              paystack_reference: paidReference,
+            })
+            .eq('id', userData.id)
 
-      if (updateError) throw updateError
+          const { data: updatedData } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userData.id)
+            .single()
 
-      // Open Paystack payment form
-      if (window.PaystackPop) {
-        const handler = window.PaystackPop.setup({
-          key: PAYSTACK_PUBLIC_KEY,
-          email: userData.email,
-          amount: formattedAmount,
-          currency: currency,
-          ref: accessCode,
-          firstName: firstName,
-          lastName: lastName,
-          onClose: () => {
+          if (updatedData) {
+            setUserData(updatedData)
+          }
+
+          toast.success('Payment Successful!', {
+            description: 'Your payment has been processed. Please submit your transaction ID.',
+          })
+        } catch (err) {
+          toast.error('Error', {
+            description: 'Payment succeeded but updating your account failed. Please submit your transaction ID.',
+          })
+        } finally {
+          setIsProcessingPayment(false)
+        }
+      }
+
+      const PaystackPop = window.PaystackPop
+
+      if (PaystackPop && typeof PaystackPop === 'function') {
+        const popup = new PaystackPop()
+        popup.resumeTransaction(accessCode, {
+          onSuccess: (transaction: any) => {
+            onPaymentSuccess(transaction?.reference || reference)
+          },
+          onCancel: () => {
             toast.error('Payment Cancelled', {
-              description: 'You have cancelled the payment. Please try again.',
+              description: 'You closed the payment window before completing. Please try again.',
             })
             setIsProcessingPayment(false)
           },
-          onSuccess: async (response: any) => {
-            try {
-              // Update payment status to completed
-              const { error } = await supabase
-                .from('users')
-                .update({
-                  payment_status: 'completed',
-                  paystack_reference: response.reference || accessCode,
-                })
-                .eq('id', userData.id)
-
-              if (error) throw error
-
-              toast.success('Payment Successful!', {
-                description: 'Your payment has been processed. Please submit your transaction ID.',
-              })
-
-              // Refresh user data
-              const { data: updatedData } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', userData.id)
-                .single()
-
-              if (updatedData) {
-                setUserData(updatedData)
-              }
-            } catch (err) {
-              toast.error('Error', {
-                description: 'Payment recorded but there was an error updating your account.',
-              })
-            } finally {
-              setIsProcessingPayment(false)
-            }
+          onError: (error: any) => {
+            toast.error('Payment Error', {
+              description: error?.message || 'Payment could not be completed. Please try again.',
+            })
+            setIsProcessingPayment(false)
           },
         })
-        handler.openIframe()
-      } else {
-        // Fallback: redirect to authorization URL
+      } else if (authorizationUrl) {
+        // Fallback: redirect to Paystack's hosted checkout.
         window.location.href = authorizationUrl
+      } else {
+        throw new Error('Unable to open the payment window. Please refresh and try again.')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to initialize payment'
