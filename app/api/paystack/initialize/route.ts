@@ -21,13 +21,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Optionally restrict channels via env (comma-separated, e.g. "card,bank").
-    // Leave unset to let Paystack use every active channel for the currency.
-    const channelsEnv = process.env.PAYSTACK_CHANNELS
-    const channels = channelsEnv
-      ? channelsEnv.split(',').map((c) => c.trim()).filter(Boolean)
-      : undefined
-
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -38,7 +31,6 @@ export async function POST(request: NextRequest) {
         email,
         amount,
         currency,
-        ...(channels ? { channels } : {}),
         metadata: {
           userId,
           firstName,
