@@ -38,6 +38,11 @@ export default function DashboardPage() {
   const supabase = createClient()
 
   const PAYMENT_AMOUNT_USD = 50
+  // The Paystack account (Kenya) collects in KES via card + M-PESA. USD collection
+  // is not enabled, so we charge the KES equivalent of the $50 USD price.
+  const PAYMENT_CURRENCY = 'KES' as const
+  const USD_TO_KES_RATE = 130
+  const CHARGE_AMOUNT = Math.round(PAYMENT_AMOUNT_USD * USD_TO_KES_RATE)
   const ADMIN_EMAIL = 'handshake.ai@outlook.com'
 
   useEffect(() => {
@@ -152,17 +157,8 @@ export default function DashboardPage() {
       const firstName = nameParts[0] || 'User'
       const lastName = nameParts.slice(1).join(' ') || 'Account'
       
-      // Currency is configurable so it can be matched to the currency that has
-      // active collection channels on the Paystack account (USD, KES, NGN, etc.)
-      // without a code change. Defaults to USD.
-      const currency = (process.env.NEXT_PUBLIC_PAYSTACK_CURRENCY || 'USD') as
-        | 'USD'
-        | 'KES'
-        | 'ZAR'
-        | 'GHS'
-        | 'NGN'
-      const amount = PAYMENT_AMOUNT_USD
-      const formattedAmount = formatAmountForPaystack(amount, currency)
+      const currency = PAYMENT_CURRENCY
+      const formattedAmount = formatAmountForPaystack(CHARGE_AMOUNT, currency)
 
       const response = await initializePayment({
         email: userData.email,
@@ -415,7 +411,10 @@ export default function DashboardPage() {
                     <CardTitle className="text-xs md:text-sm text-[#001f23]">Amount Required</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-base md:text-lg font-bold text-[#001f23]">${PAYMENT_AMOUNT_USD} USD</p>
+                    <p className="text-base md:text-lg font-bold text-[#001f23]">
+                      {CHARGE_AMOUNT.toLocaleString()} {PAYMENT_CURRENCY}
+                    </p>
+                    <p className="text-xs text-[#001f23]/60 mt-1">Equivalent of ${PAYMENT_AMOUNT_USD} USD</p>
                   </CardContent>
                 </Card>
 
@@ -502,7 +501,8 @@ export default function DashboardPage() {
               <CardHeader className="pb-3 md:pb-4">
                 <CardTitle className="text-sm md:text-lg text-[#001f23]">Ready to Activate Your Account?</CardTitle>
                 <CardDescription className="text-xs md:text-sm text-[#001f23]/70">
-                  Click the button below to securely process your ${PAYMENT_AMOUNT_USD} USD payment
+                  Click the button below to securely process your{' '}
+                  {CHARGE_AMOUNT.toLocaleString()} {PAYMENT_CURRENCY} payment
                 </CardDescription>
               </CardHeader>
               <CardContent>

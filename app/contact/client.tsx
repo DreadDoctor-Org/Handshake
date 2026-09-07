@@ -223,6 +223,47 @@ export default function ContactPageClient() {
               We typically respond to all inquiries within 24 hours. For urgent matters regarding account verification, please mention it in your subject line.
             </p>
           </Card>
+
+          {/* Support FAQ */}
+          <div className="mt-12 space-y-6">
+            <div className="text-center space-y-3">
+              <h2 className="text-2xl md:text-3xl font-bold text-[#001f23]">Before You Reach Out</h2>
+              <p className="text-sm md:text-base text-[#001f23]/70 max-w-2xl mx-auto leading-relaxed">
+                Many common questions are answered below. If you still need help after reading these, send us a message using the form
+                above and our team will be happy to assist.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-5 md:p-6 space-y-2">
+                <h3 className="text-base md:text-lg font-semibold text-[#001f23]">How do I check my verification status?</h3>
+                <p className="text-xs md:text-sm text-[#001f23]/70 leading-relaxed">
+                  Log in to your dashboard to see the current status of your account. You will also receive an email notification once
+                  your account has been reviewed and activated.
+                </p>
+              </Card>
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-5 md:p-6 space-y-2">
+                <h3 className="text-base md:text-lg font-semibold text-[#001f23]">I did not receive my confirmation email.</h3>
+                <p className="text-xs md:text-sm text-[#001f23]/70 leading-relaxed">
+                  Please check your spam or promotions folder first. If it still has not arrived, contact us with the email address you
+                  registered with and we will help resolve it quickly.
+                </p>
+              </Card>
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-5 md:p-6 space-y-2">
+                <h3 className="text-base md:text-lg font-semibold text-[#001f23]">What payment methods are accepted?</h3>
+                <p className="text-xs md:text-sm text-[#001f23]/70 leading-relaxed">
+                  Payments are processed securely through Paystack, which supports cards, mobile money, and bank transfers. Your details
+                  are never stored on our servers.
+                </p>
+              </Card>
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-5 md:p-6 space-y-2">
+                <h3 className="text-base md:text-lg font-semibold text-[#001f23]">Where can I learn more about the work?</h3>
+                <p className="text-xs md:text-sm text-[#001f23]/70 leading-relaxed">
+                  Visit our Guide for a complete introduction to data annotation, including task types, quality standards, and practical
+                  tips for getting started.
+                </p>
+              </Card>
+            </div>
+          </div>
         </section>
       </main>
 

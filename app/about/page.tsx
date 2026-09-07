@@ -140,6 +140,75 @@ export default function AboutPage() {
               We believe in continuous improvement and regularly update our platform based on user feedback and industry best practices.
             </p>
           </Card>
+
+          {/* Our Story */}
+          <div className="space-y-4">
+            <h2 className="text-2xl md:text-4xl font-bold text-[#001f23]">Our Story</h2>
+            <p className="text-base md:text-lg text-[#001f23]/80 leading-relaxed">
+              Handshake AI began with a simple observation: the global demand for high-quality training data was growing rapidly, yet
+              many capable workers around the world lacked a clear, trustworthy path into annotation work. Talented people were held
+              back not by ability, but by a shortage of structured training and reliable access to legitimate opportunities.
+            </p>
+            <p className="text-base md:text-lg text-[#001f23]/80 leading-relaxed">
+              We set out to close that gap. By combining approachable training materials with a transparent verification process, we
+              help contributors move from curiosity to competence. Our focus has always been on clarity—clear expectations, clear
+              pricing, and clear communication—so that every member knows exactly what they are working toward at each step.
+            </p>
+          </div>
+
+          {/* How We Verify Accounts */}
+          <div className="space-y-6">
+            <h2 className="text-2xl md:text-4xl font-bold text-[#001f23]">How Our Verification Process Works</h2>
+            <p className="text-base md:text-lg text-[#001f23]/80 leading-relaxed max-w-3xl">
+              Verification protects both contributors and the platform. It ensures that every active account meets consistent quality
+              and security standards before it is put to use. Here is what the process looks like from start to finish.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-6 space-y-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B8F663] to-[#59E4A0] flex items-center justify-center">
+                  <span className="font-bold text-[#001f23]">1</span>
+                </div>
+                <h3 className="text-lg font-semibold text-[#001f23]">Registration &amp; Email Confirmation</h3>
+                <p className="text-sm text-[#001f23]/70 leading-relaxed">
+                  You create an account and confirm your email address, establishing a secure identity within the platform.
+                </p>
+              </Card>
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-6 space-y-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#59E4A0] to-[#23DAC2] flex items-center justify-center">
+                  <span className="font-bold text-[#001f23]">2</span>
+                </div>
+                <h3 className="text-lg font-semibold text-[#001f23]">Enrollment &amp; Review</h3>
+                <p className="text-sm text-[#001f23]/70 leading-relaxed">
+                  After enrollment, our team reviews your profile to confirm everything is in order before activation.
+                </p>
+              </Card>
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur p-6 space-y-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#23DAC2] to-[#00D3D8] flex items-center justify-center">
+                  <span className="font-bold text-[#001f23]">3</span>
+                </div>
+                <h3 className="text-lg font-semibold text-[#001f23]">Activation &amp; Access</h3>
+                <p className="text-sm text-[#001f23]/70 leading-relaxed">
+                  Once verified, your account is activated and you receive access to training and task-ready resources.
+                </p>
+              </Card>
+            </div>
+          </div>
+
+          {/* Commitment */}
+          <div className="space-y-4">
+            <h2 className="text-2xl md:text-4xl font-bold text-[#001f23]">Our Commitment to Contributors</h2>
+            <p className="text-base md:text-lg text-[#001f23]/80 leading-relaxed">
+              We understand that trust is earned, not assumed. That is why we hold ourselves to a straightforward set of commitments:
+              we explain our pricing openly, we protect your personal and payment information with industry-standard security, and we
+              respond to support requests promptly. We never ask for more information than we need, and we are always transparent about
+              how the platform works.
+            </p>
+            <p className="text-base md:text-lg text-[#001f23]/80 leading-relaxed">
+              Above all, we are committed to your growth. The training and resources we provide are designed to give you skills that
+              remain valuable well beyond any single task or project. When our contributors succeed, we succeed—and that shared success
+              is the foundation of everything we do.
+            </p>
+          </div>
         </section>
       </main>
 

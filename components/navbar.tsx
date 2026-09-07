@@ -30,6 +30,11 @@ export default function Navbar() {
                 About
               </Button>
             </Link>
+            <Link href="/guide">
+              <Button variant="ghost" className="text-sm text-[#001f23] hover:bg-[#001f23]/10 px-3">
+                Guide
+              </Button>
+            </Link>
             <Link href="/contact">
               <Button variant="ghost" className="text-sm text-[#001f23] hover:bg-[#001f23]/10 px-3">
                 Contact
@@ -72,6 +77,11 @@ export default function Navbar() {
           <Link href="/about">
             <Button variant="ghost" className="text-xs text-[#001f23] hover:bg-[#001f23]/10 px-2 py-1 h-auto">
               About
+            </Button>
+          </Link>
+          <Link href="/guide">
+            <Button variant="ghost" className="text-xs text-[#001f23] hover:bg-[#001f23]/10 px-2 py-1 h-auto">
+              Guide
             </Button>
           </Link>
           <Link href="/contact">

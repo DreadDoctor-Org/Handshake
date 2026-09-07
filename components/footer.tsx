@@ -46,6 +46,10 @@ export default function Footer() {
                 About
               </Link>
               <span className="text-white/40">|</span>
+              <Link href="/guide" className="text-xs md:text-sm text-white/70 hover:text-white transition">
+                Guide
+              </Link>
+              <span className="text-white/40">|</span>
               <Link href="/contact" className="text-xs md:text-sm text-white/70 hover:text-white transition">
                 Contact
               </Link>
