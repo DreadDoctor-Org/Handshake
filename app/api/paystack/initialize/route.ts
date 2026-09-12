@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
         email,
         amount,
         currency,
+        // Explicitly request the merchant's active card channel instead of
+        // allowing Paystack to negotiate mobile-money or other channels.
+        channels: ['card'],
         metadata: {
           userId,
           firstName,
