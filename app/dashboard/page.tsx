@@ -38,11 +38,9 @@ export default function DashboardPage() {
   const supabase = createClient()
 
   const PAYMENT_AMOUNT_USD = 50
-  // The Paystack account (Kenya) collects in KES via card + M-PESA. USD collection
-  // is not enabled, so we charge the KES equivalent of the $50 USD price.
-  const PAYMENT_CURRENCY = 'KES' as const
-  const USD_TO_KES_RATE = 130
-  const CHARGE_AMOUNT = Math.round(PAYMENT_AMOUNT_USD * USD_TO_KES_RATE)
+  // Charge the product price directly in USD through Paystack's card channel.
+  const PAYMENT_CURRENCY = 'USD' as const
+  const CHARGE_AMOUNT = PAYMENT_AMOUNT_USD
   const ADMIN_EMAIL = 'handshake.ai@outlook.com'
 
   useEffect(() => {
