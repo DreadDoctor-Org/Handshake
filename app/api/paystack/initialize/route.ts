@@ -12,9 +12,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, amount, currency, firstName, lastName, userId } = body
+    const { email, amount, firstName, lastName, userId } = body
+    // This product is priced and collected in USD. Keep this server-controlled
+    // so stale clients cannot silently switch the checkout to KES/M-PESA.
+    const currency = 'USD' as const
 
-    if (!email || !amount || !currency || !firstName || !lastName || !userId) {
+    if (!email || !amount || !firstName || !lastName || !userId) {
       return NextResponse.json(
         { message: 'Missing required fields' },
         { status: 400 }
@@ -31,9 +34,6 @@ export async function POST(request: NextRequest) {
         email,
         amount,
         currency,
-        // Explicitly request the merchant's active card channel instead of
-        // allowing Paystack to negotiate mobile-money or other channels.
-        channels: ['card'],
         metadata: {
           userId,
           firstName,
